@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/workspace/BikeTelemetry/App/app/src/main/res/layout/activity_file.xml" value="0.24139492753623187" />
+        <entry key="..\:/workspace/BikeTelemetry/App/app/src/main/res/layout/activity_live_stream.xml" value="0.25271739130434784" />
+        <entry key="..\:/workspace/BikeTelemetry/App/app/src/main/res/layout/activity_local_file.xml" value="0.223731884057971" />
+        <entry key="..\:/workspace/BikeTelemetry/App/app/src/main/res/layout/activity_main.xml" value="0.2692502532928065" />
+        <entry key="..\:/workspace/BikeTelemetry/App/app/src/main/res/layout/list_item_view.xml" value="0.29846014492753625" />
+        <entry key="..\:/workspace/BikeTelemetry/App/app/src/main/res/menu/menu_files.xml" value="0.3645833333333333" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

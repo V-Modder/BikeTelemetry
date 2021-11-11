@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">BikeTelemetry</string>
+    <string name="ctx_copy">Copy</string>
+    <string name="ctx_delete">Delete</string>
+    <string name="btn_local_files">Local Files</string>
+    <string name="btn_telemetry_files">Telemetry Files</string>
+    <string name="btn_live_stream">Live Stream</string>
+</resources>
