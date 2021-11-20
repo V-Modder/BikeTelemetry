@@ -25,21 +25,30 @@ import java.util.Map;
 import java.util.Optional;
 
 public class BluetoothService {
+    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRYY = 1;
+    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRYY_END = 2;
+    public static final byte RESPONSE_TAG_GET_FILE = 3;
+    public static final byte RESPONSE_TAG_TELEMETRY = 4;
+    public static final byte RESPONSE_TAG_ERROR = (byte) 255;
+
     private static final String TELEMETRY_DEVICE_NAME = "Bike-Telemetry";
 
-    public static final byte RESPONSE_TAG_GET_FILE_LIST = 1;
-    public static final byte RESPONSE_TAG_GET_FILE = 2;
-    public static final byte RESPONSE_TAG_TELEMETRY = 3;
+    private static final byte REQUEST_TAG_GET_FILE_LIST = 1;
+    private static final byte REQUEST_TAG_GET_FILE = 2;
+    private static final byte REQUEST_TAG_ENABLE_TELEMETRY = 3;
 
     private File tmpDir;
     private Map<Byte, List<Handler>> handlers;
+    private BluetoothSocket socket;
+    private Thread worker;
 
     public BluetoothService(File tmpDir) {
         this.tmpDir = tmpDir;
         this.handlers = new HashMap<>();
-        handlers.put(RESPONSE_TAG_GET_FILE_LIST, new ArrayList<>());
+        handlers.put(RESPONSE_TAG_GET_FILE_LIST_ENTRYY, new ArrayList<>());
         handlers.put(RESPONSE_TAG_GET_FILE, new ArrayList<>());
         handlers.put(RESPONSE_TAG_TELEMETRY, new ArrayList<>());
+        worker = new Thread(() -> receiveResponse());
     }
 
     public void addHandler(byte responseTag, Handler handler) {
@@ -52,46 +61,92 @@ public class BluetoothService {
                 .forEach(entry -> entry.getValue().remove(handler));
     }
 
-    public void test(String command) throws Exception {
+    public void requestFileList() {
+        new Thread(() -> executeRequest(REQUEST_TAG_GET_FILE_LIST, null)).start();
+    }
+
+    public void rquestFile(String filename) {
+        byte[] param = filename.getBytes(StandardCharsets.UTF_8);
+        new Thread(() -> executeRequest(REQUEST_TAG_GET_FILE, param)).start();
+    }
+
+    public void requestEnableTelemetry() {
+        requestEnableTelemetry(true);
+    }
+
+    public void requestDisableTelemetry() {
+        requestEnableTelemetry(false);
+    }
+
+    private void requestEnableTelemetry(boolean enable) {
+        byte[] param = new byte[] { (byte) (enable ? 1 : 0) };
+        new Thread(() -> executeRequest(REQUEST_TAG_ENABLE_TELEMETRY, param)).start();
+    }
+
+    private void executeRequest(byte command, byte[] param) {
         Optional<BluetoothDevice> telemetryDevice = getTelemetryDevice();
 
         if(!telemetryDevice.isPresent()) {
-            throw new Exception("Please connect Bluetooth Telemetry");
+            return;
+            //throw new Exception("Please connect Bluetooth Telemetry");
         }
 
-        BluetoothSocket socket = telemetryDevice.get().createRfcommSocketToServiceRecord(telemetryDevice.get().getUuids()[0].getUuid());
-        if(!socket.isConnected()) {
-            socket.connect();
-        }
+        try {
+            socket = telemetryDevice.get().createRfcommSocketToServiceRecord(telemetryDevice.get().getUuids()[0].getUuid());
 
-        OutputStream outputStream = socket.getOutputStream();
-        InputStream inputStream = socket.getInputStream();
-        outputStream.write(command.getBytes(StandardCharsets.UTF_8));
-//https://developer.android.com/guide/topics/connectivity/bluetooth/transfer-data
-        if(inputStream.available() > 0) {
-            int messageType = inputStream.read();
-            Object response = null;
-            switch (messageType) {
-                case RESPONSE_TAG_GET_FILE_LIST:
-                    response = receiveFileList(inputStream);
-                    break;
-                case RESPONSE_TAG_GET_FILE:
-                    response = receiveFile(inputStream);
-                    break;
-                case RESPONSE_TAG_TELEMETRY:
-                    response = receiveTelemetry();
-                    break;
+            if(!socket.isConnected()) {
+                socket.connect();
             }
 
-            if(response != null) {
-                handleData(messageType, response);
+            if(!worker.isAlive()) {
+                worker.start();
+            }
+
+            OutputStream outputStream = socket.getOutputStream();
+
+            outputStream.write(command);
+            if(param != null) {
+                outputStream.write(param);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void receiveResponse() {
+        boolean received = false;
+        while(!received && !worker.isInterrupted()) {
+            try {
+                InputStream inputStream = socket.getInputStream();
+                while (inputStream.available() > 0) {
+                    int messageType = inputStream.read();
+                    switch (messageType) {
+                        case RESPONSE_TAG_GET_FILE_LIST_ENTRYY:
+                            handleData(messageType, receiveFileListEntry(inputStream));
+                            break;
+                        case RESPONSE_TAG_GET_FILE_LIST_ENTRYY_END:
+                            handleData(messageType, null);
+                            received = true;
+                            break;
+                        case RESPONSE_TAG_GET_FILE:
+                            handleData(messageType, receiveFile(inputStream));
+                            received = true;
+                            break;
+                        case RESPONSE_TAG_TELEMETRY:
+                            handleData(messageType, receiveTelemetry());
+                            break;
+                    }
+                }
+            }
+            catch (IOException e) {
+                handleData(RESPONSE_TAG_ERROR, e.getMessage());
             }
         }
     }
 
     @NonNull
-    private TelemetryFileListEntry receiveFileList(InputStream inputStream) throws IOException {
-        byte[] dummy =new byte[4];
+    private TelemetryFileListEntry receiveFileListEntry(InputStream inputStream) throws IOException {
+        byte[] dummy = new byte[4];
         inputStream.read(dummy);
         int size = ByteBuffer.wrap(dummy).getInt();
         StringBuilder sb = new StringBuilder();
@@ -133,7 +188,9 @@ public class BluetoothService {
     private void handleData(int what, Object data) {
         Message msg = new Message();
         msg.what = what;
-        msg.obj = data;
+        if(data != null) {
+            msg.obj = data;
+        }
         handlers.get(what).forEach(handle -> handle.handleMessage(msg));
     }
 }
