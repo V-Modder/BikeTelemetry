@@ -1,10 +1,13 @@
 package com.biketelemetry.data;
 
 import android.content.Context;
+import android.os.Handler;
 
 import java.util.List;
 
 public interface FileListLoader {
 
-    List<TelemetryFileListEntry> getFiles(Context context);
+    void getFiles(Handler handler);
+
+    void remove
 }

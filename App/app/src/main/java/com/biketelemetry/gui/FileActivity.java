@@ -12,7 +12,6 @@ import com.biketelemetry.data.FileListLoader;
 import com.biketelemetry.data.LocalFileListLoader;
 import com.biketelemetry.data.TelemetryFileListEntry;
 import com.biketelemetry.data.TelemetryFileListLoader;
-import com.biketelemetry.service.BluetoothService2;
 
 import java.util.ArrayList;
 import java.util.List;

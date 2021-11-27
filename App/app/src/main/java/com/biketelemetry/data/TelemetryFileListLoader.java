@@ -6,13 +6,11 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 
-import com.biketelemetry.service.BluetoothService2;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TelemetryFileListLoader extends Handler implements FileListLoader {
+public class TelemetryFileListLoader implements FileListLoader {
     private BluetoothService2 bluetoothService = new BluetoothService2();
 
     public List<TelemetryFileListEntry> getFiles(Context context) {
@@ -30,10 +28,6 @@ public class TelemetryFileListLoader extends Handler implements FileListLoader {
         return null;
     }
 
-    @Override
-    public void handleMessage(@NonNull Message msg) {
-
-    }
 
     private List<TelemetryFileListEntry> parseFiles(String files) {
         return Arrays.stream(files.split("\\|"))
