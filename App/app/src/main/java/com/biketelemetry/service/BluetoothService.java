@@ -80,7 +80,7 @@ public class BluetoothService extends Service {
     }
 
     private void requestDeviceInfo() {
-        executeRequest(REQUEST_TAG_GET_FILE_LIST, null);
+        executeRequest(REQUEST_TAG_DEVICE_INFO, null);
     }
 
     private void requestFileList() {

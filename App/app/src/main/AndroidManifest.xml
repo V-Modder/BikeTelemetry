@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.biketelemetry">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.biketelemetry">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <!--<uses-permission android:name="android.permission.LOCAL_MAC_ADDRESS" />-->
 
     <application
         android:allowBackup="true"
@@ -15,16 +15,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BikeTelemetry">
         <activity
-            android:name=".gui.FileActivity"
+            android:name=".gui.LocalFileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".gui.RemoteFileActivity"
             android:exported="false" />
         <activity
             android:name=".gui.MainActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service android:name=".service.BluetoothService" />
     </application>
 

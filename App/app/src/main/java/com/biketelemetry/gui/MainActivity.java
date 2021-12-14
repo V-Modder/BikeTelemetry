@@ -17,20 +17,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openLocalFiles(View view) {
-        Intent intent = new Intent(this, FileActivity.class);
-        intent.putExtra(FileActivity.USE_LOCAL_FILE_LOADER, true);
+        Intent intent = new Intent(this, RemoteFileActivity.class);
+        intent.putExtra(RemoteFileActivity.USE_LOCAL_FILE_LOADER, true);
         startActivity(intent);
     }
 
     public void openTelemetryFiles(View view) {
-        Intent intent = new Intent(this, FileActivity.class);
-        intent.putExtra(FileActivity.USE_LOCAL_FILE_LOADER, false);
+        Intent intent = new Intent(this, RemoteFileActivity.class);
+        intent.putExtra(RemoteFileActivity.USE_LOCAL_FILE_LOADER, false);
         startActivity(intent);
     }
 
     public void openLiveStream(View view) {
-        Intent intent = new Intent(this, FileActivity.class);
-        intent.putExtra(FileActivity.USE_LOCAL_FILE_LOADER, false);
+        Intent intent = new Intent(this, RemoteFileActivity.class);
+        intent.putExtra(RemoteFileActivity.USE_LOCAL_FILE_LOADER, false);
         startActivity(intent);
     }
 }

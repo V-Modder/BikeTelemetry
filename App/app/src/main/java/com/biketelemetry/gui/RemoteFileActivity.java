@@ -9,32 +9,30 @@ import android.view.MenuItem;
 
 import com.biketelemetry.R;
 import com.biketelemetry.data.FileListLoader;
-import com.biketelemetry.data.LocalFileListLoader;
 import com.biketelemetry.data.TelemetryFileListEntry;
-import com.biketelemetry.data.TelemetryFileListLoader;
+import com.biketelemetry.service.BluetoothService;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileActivity extends AppCompatActivity {
-    public static final String USE_LOCAL_FILE_LOADER = "local_file_loader";
+public class RemoteFileActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 12;
 
+    private BluetoothService bluetoothService = new BluetoothService();
     private List<TelemetryFileListEntry> fileList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_file);
+        setContentView(R.layout.activity_remote_file);
 
-        fileList = new ArrayList<>();//= getFiles();
+        fileList = new ArrayList<>();
 
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new RecyclerAdapter(fileList));
-        if(!getIntent().getBooleanExtra(USE_LOCAL_FILE_LOADER, true)) {
-            registerForContextMenu(recyclerView);
-        }
+        registerForContextMenu(recyclerView);
+        getFiles();
     }
 
     @Override
@@ -42,18 +40,11 @@ public class FileActivity extends AppCompatActivity {
         super.onResume();
 
         fileList.clear();
-        fileList.addAll(getFiles());
+        getFiles();
     }
 
-    private List<TelemetryFileListEntry> getFiles() {
-        FileListLoader loader;
-        if(getIntent().getBooleanExtra(USE_LOCAL_FILE_LOADER, true)) {
-            loader = new LocalFileListLoader();
-        }
-        else {
-            loader = new TelemetryFileListLoader();
-        }
-        return loader.getFiles(getApplicationContext());
+    private void getFiles() {
+        bluetoothService.
     }
 
     @Override
