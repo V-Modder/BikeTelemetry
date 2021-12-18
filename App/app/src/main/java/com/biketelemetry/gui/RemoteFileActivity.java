@@ -4,11 +4,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.biketelemetry.R;
-import com.biketelemetry.data.FileListLoader;
 import com.biketelemetry.data.TelemetryFileListEntry;
 import com.biketelemetry.service.BluetoothService;
 
@@ -18,8 +27,41 @@ import java.util.List;
 public class RemoteFileActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 12;
 
-    private BluetoothService bluetoothService = new BluetoothService();
+    private Messenger bluetoothServiceInput;
+    private Messenger bluetoothServiceReply;
+    private boolean bluetoothServiceBound;
+    private ServiceConnection bluetoothServiceConnection;
     private List<TelemetryFileListEntry> fileList;
+
+    RemoteFileActivity() {
+        bluetoothServiceInput = null;
+        bluetoothServiceReply = new Messenger(new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                if(msg.what == BluetoothService.RESPONSE_TAG_GET_FILE_LIST_ENTRYY) {
+                    fileList.add((TelemetryFileListEntry) msg.obj);
+                }
+            }
+        });
+        bluetoothServiceBound = false;
+        bluetoothServiceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName className,
+                                           IBinder service) {
+
+                Toast.makeText(RemoteFileActivity.this, "connected", Toast.LENGTH_SHORT).show();
+                bluetoothServiceInput = new Messenger(service);
+                bluetoothServiceBound = true;
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName arg0) {
+                bluetoothServiceInput = null;
+                bluetoothServiceBound = false;
+            }
+        };
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +85,33 @@ public class RemoteFileActivity extends AppCompatActivity {
         getFiles();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        Intent intent = new Intent(this, BluetoothService.class);
+        bindService(intent, bluetoothServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (bluetoothServiceBound) {
+            unbindService(bluetoothServiceConnection);
+            bluetoothServiceBound = false;
+        }
+    }
+
     private void getFiles() {
-        bluetoothService.
+        Message msg = new Message();
+        msg.what = BluetoothService.REQUEST_TAG_GET_FILE_LIST;
+        msg.replyTo = bluetoothServiceReply;
+        try {
+            bluetoothServiceInput.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -72,8 +139,14 @@ public class RemoteFileActivity extends AppCompatActivity {
     }
 
     private void deleteTelemetryFile(TelemetryFileListEntry telemetryFileListEntry) {
-        BluetoothService2 serv = new BluetoothService2();
-        serv.send(BluetoothService2.COMMAND_GET_FILE, rey)
+        Message msg = new Message();
+        msg.what = BluetoothService.REQUEST_TAG_DELETE_FILE;
+        msg.replyTo = bluetoothServiceReply;
+        try {
+            bluetoothServiceInput.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     private RecyclerView.Adapter getAdapter() {

@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class BluetoothService extends Service {
+    //https://www.c-sharpcorner.com/article/bound-service-using-messenger-in-android-part-3/
     public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRYY = 1;
     public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRYY_END = 2;
     public static final byte RESPONSE_TAG_GET_FILE = 3;
@@ -40,12 +41,14 @@ public class BluetoothService extends Service {
     public static final byte REQUEST_TAG_DEVICE_INFO = 1;
     public static final byte REQUEST_TAG_GET_FILE_LIST = 2;
     public static final byte REQUEST_TAG_GET_FILE = 3;
-    public static final byte REQUEST_TAG_ENABLE_TELEMETRY = 4;
+    public static final byte REQUEST_TAG_DELETE_FILE = 4;
+    public static final byte REQUEST_TAG_ENABLE_TELEMETRY = 5;
 
 
     private BluetoothSocket socket;
     private boolean interrupted;
-    private Messenger guiMessenger;
+    private Messenger replyMessanger;
+    private Messenger inputMessanger;
 
     class IncomingHandler extends Handler {
         private Context applicationContext;
@@ -59,18 +62,26 @@ public class BluetoothService extends Service {
             switch (msg.what) {
                 case REQUEST_TAG_DEVICE_INFO:
                     Toast.makeText(applicationContext, "REQUEST_TAG_DEVICE_INFO!", Toast.LENGTH_SHORT).show();
+                    replyMessanger = msg.replyTo;
                     BluetoothService.this.requestDeviceInfo();
                     break;
                 case REQUEST_TAG_GET_FILE_LIST:
                     Toast.makeText(applicationContext, "REQUEST_TAG_GET_FILE_LIST!", Toast.LENGTH_SHORT).show();
+                    replyMessanger = msg.replyTo;
                     BluetoothService.this.requestFileList();
                     break;
                 case REQUEST_TAG_GET_FILE:
                     Toast.makeText(applicationContext, "REQUEST_TAG_GET_FILE!", Toast.LENGTH_SHORT).show();
+                    replyMessanger = msg.replyTo;
+                    BluetoothService.this.requestFile((String)msg.obj);
+                    break;
+                case REQUEST_TAG_DELETE_FILE:
+                    Toast.makeText(applicationContext, "REQUEST_TAG_DELETE_FILE!", Toast.LENGTH_SHORT).show();
                     BluetoothService.this.requestFile((String)msg.obj);
                     break;
                 case REQUEST_TAG_ENABLE_TELEMETRY:
                     Toast.makeText(applicationContext, "REQUEST_TAG_ENABLE_TELEMETRY!", Toast.LENGTH_SHORT).show();
+                    replyMessanger = msg.replyTo;
                     BluetoothService.this.requestEnableTelemetry(msg.arg1 == 1);
                     break;
                 default:
@@ -90,6 +101,11 @@ public class BluetoothService extends Service {
     private void requestFile(String filename) {
         byte[] param = filename.getBytes(StandardCharsets.UTF_8);
         executeRequest(REQUEST_TAG_GET_FILE, param);
+    }
+
+    private void requestDeleteFile(String filename) {
+        byte[] param = filename.getBytes(StandardCharsets.UTF_8);
+        executeRequest(REQUEST_TAG_DELETE_FILE, param);
     }
 
     private void requestEnableTelemetry(boolean enable) {
@@ -205,7 +221,7 @@ public class BluetoothService extends Service {
         }
 
         try {
-            guiMessenger.send(msg);
+            replyMessanger.send(msg);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -216,8 +232,8 @@ public class BluetoothService extends Service {
     public IBinder onBind(Intent intent) {
         interrupted = false;
         Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT).show();
-        guiMessenger = new Messenger(new IncomingHandler(this));
-        return guiMessenger.getBinder();
+        inputMessanger = new Messenger(new IncomingHandler(this));
+        return inputMessanger.getBinder();
     }
 
     @Override
