@@ -30,10 +30,11 @@ import java.util.Optional;
 
 public class BluetoothService extends Service {
     //https://www.c-sharpcorner.com/article/bound-service-using-messenger-in-android-part-3/
-    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRYY = 1;
-    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRYY_END = 2;
-    public static final byte RESPONSE_TAG_GET_FILE = 3;
-    public static final byte RESPONSE_TAG_TELEMETRY = 4;
+    public static final byte RESPONSE_TAG_DEVICE_INFO = 1;
+    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRY = 2;
+    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRY_END = 3;
+    public static final byte RESPONSE_TAG_GET_FILE = 4;
+    public static final byte RESPONSE_TAG_TELEMETRY = 5;
     public static final byte RESPONSE_TAG_ERROR = (byte) 255;
 
     private static final String TELEMETRY_DEVICE_NAME = "Bike-Telemetry";
@@ -149,10 +150,13 @@ public class BluetoothService extends Service {
                 while (inputStream.available() > 0) {
                     int messageType = inputStream.read();
                     switch (messageType) {
-                        case RESPONSE_TAG_GET_FILE_LIST_ENTRYY:
+                        case RESPONSE_TAG_DEVICE_INFO:
+                            handleData(messageType, receiveDeviceinfo(inputStream));
+                            break;
+                        case RESPONSE_TAG_GET_FILE_LIST_ENTRY:
                             handleData(messageType, receiveFileListEntry(inputStream));
                             break;
-                        case RESPONSE_TAG_GET_FILE_LIST_ENTRYY_END:
+                        case RESPONSE_TAG_GET_FILE_LIST_ENTRY_END:
                             handleData(messageType, null);
                             received = true;
                             break;
@@ -161,7 +165,7 @@ public class BluetoothService extends Service {
                             received = true;
                             break;
                         case RESPONSE_TAG_TELEMETRY:
-                            handleData(messageType, receiveTelemetry());
+                            handleData(messageType, receiveTelemetry(inputStream));
                             break;
                     }
                 }
@@ -172,18 +176,16 @@ public class BluetoothService extends Service {
         }
     }
 
+    private String receiveDeviceinfo(InputStream inputStream) throws IOException {
+        return StreamHelper.readString(inputStream, 25);
+    }
+
     @NonNull
     private TelemetryFileListEntry receiveFileListEntry(InputStream inputStream) throws IOException {
-        byte[] dummy = new byte[4];
-        inputStream.read(dummy);
-        int size = ByteBuffer.wrap(dummy).getInt();
-        StringBuilder sb = new StringBuilder();
-        int ch = 0;
-        while ((ch = inputStream.read()) != -1) {
-            sb.append((char) ch);
-        }
+        long size = StreamHelper.readInt(inputStream);
+        String filename = StreamHelper.readString(inputStream, 25);
 
-        return new TelemetryFileListEntry(sb.toString(), size);
+        return new TelemetryFileListEntry(filename, size);
     }
 
     @NonNull
@@ -201,8 +203,27 @@ public class BluetoothService extends Service {
     }
 
     @NonNull
-    private Telemetry receiveTelemetry() {
-        return new Telemetry();
+    private Telemetry receiveTelemetry(InputStream inputStream) throws IOException {
+        Telemetry telemetry = new Telemetry();
+        telemetry.setLatitude(StreamHelper.readDouble(inputStream));
+        telemetry.setLongitude(StreamHelper.readDouble(inputStream));
+        telemetry.setDistance(StreamHelper.readDouble(inputStream));
+        telemetry.setMonth(StreamHelper.readInt(inputStream));
+        telemetry.setDay(StreamHelper.readInt(inputStream));
+        telemetry.setYear(StreamHelper.readInt(inputStream));
+        telemetry.setHour(StreamHelper.readInt(inputStream));
+        telemetry.setMinute(StreamHelper.readInt(inputStream));
+        telemetry.setSecond(StreamHelper.readInt(inputStream));
+        telemetry.setMillisecond(StreamHelper.readInt(inputStream));
+        telemetry.setSpeed(StreamHelper.readDouble(inputStream));
+        telemetry.setAltitude(StreamHelper.readDouble(inputStream));
+        telemetry.setRoll(StreamHelper.readInt(inputStream));
+        telemetry.setPitch(StreamHelper.readInt(inputStream));
+        telemetry.setXg(StreamHelper.readDouble(inputStream));
+        telemetry.setYg(StreamHelper.readDouble(inputStream));
+        telemetry.setZg(StreamHelper.readDouble(inputStream));
+
+        return telemetry;
     }
 
     private Optional<BluetoothDevice> getTelemetryDevice() {

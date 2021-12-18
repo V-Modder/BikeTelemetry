@@ -39,7 +39,7 @@ public class RemoteFileActivity extends AppCompatActivity {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                if(msg.what == BluetoothService.RESPONSE_TAG_GET_FILE_LIST_ENTRYY) {
+                if(msg.what == BluetoothService.RESPONSE_TAG_GET_FILE_LIST_ENTRY) {
                     fileList.add((TelemetryFileListEntry) msg.obj);
                 }
             }

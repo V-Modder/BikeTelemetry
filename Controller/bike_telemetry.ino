@@ -81,6 +81,16 @@ String getNewFileName() {
   return FILE_PATH + "/" + formatLeadingZero(number, 3) + "_trac.csv";
 }
 
+/*
+  Dataconversion
+  byte[] convertDoubleToByteArray(double[] doubles) {
+  ByteBuffer bb = ByteBuffer.allocate(doubles.length * 8);
+  for (double d : doubles) {
+    bb.putDouble(d);
+  }
+  return bb.array();
+*/
+
 void loop() {
   while (ss.available() > 0) {
     if (gps.encode(ss.read())) {
