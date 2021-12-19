@@ -21,7 +21,8 @@ static const char RESPONSE_TAG_DEVICE_INFO = 1;
 static const char RESPONSE_TAG_GET_FILE_LIST_ENTRY = 2;
 static const char RESPONSE_TAG_GET_FILE_LIST_ENTRY_END = 3;
 static const char RESPONSE_TAG_GET_FILE = 4;
-static const char RESPONSE_TAG_TELEMETRY = 5;
+static const char RESPONSE_TAG_GET_FILE_END = 5;
+static const char RESPONSE_TAG_TELEMETRY = 6;
 static const char RESPONSE_TAG_ERROR = 255;
 
 static const int RXPin = 16, TXPin = 17;
@@ -387,7 +388,7 @@ void sendFile(String filename) {
   if(filename != DATA_FILE.name() && SD.exists(FILE_PATH + "/" + filename)) {
     String filePath = FILE_PATH + "/" + filename;
     File file = SD.open(filePath);
-    writeToBt("FILE_START|" + filename);
+    SerialBT.write(RESPONSE_TAG_GET_FILE);
     while(file.available()) {
       String line = file.readStringUntil('\n');
       writeToBt(line);

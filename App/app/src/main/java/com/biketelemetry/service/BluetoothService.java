@@ -33,7 +33,8 @@ public class BluetoothService extends Service {
     public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRY = 2;
     public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRY_END = 3;
     public static final byte RESPONSE_TAG_GET_FILE = 4;
-    public static final byte RESPONSE_TAG_TELEMETRY = 5;
+    public static final byte RESPONSE_TAG_GET_FILE_END = 5;
+    public static final byte RESPONSE_TAG_TELEMETRY = 6;
     public static final byte RESPONSE_TAG_ERROR = (byte) 255;
 
     private static final String TELEMETRY_DEVICE_NAME = "Bike-Telemetry";
