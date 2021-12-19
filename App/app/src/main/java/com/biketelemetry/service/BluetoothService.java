@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -78,7 +77,7 @@ public class BluetoothService extends Service {
                     break;
                 case REQUEST_TAG_DELETE_FILE:
                     Toast.makeText(applicationContext, "REQUEST_TAG_DELETE_FILE!", Toast.LENGTH_SHORT).show();
-                    BluetoothService.this.requestFile((String)msg.obj);
+                    BluetoothService.this.requestDeleteFile((String)msg.obj);
                     break;
                 case REQUEST_TAG_ENABLE_TELEMETRY:
                     Toast.makeText(applicationContext, "REQUEST_TAG_ENABLE_TELEMETRY!", Toast.LENGTH_SHORT).show();
@@ -193,7 +192,7 @@ public class BluetoothService extends Service {
         File tmpFile = File.createTempFile("download", ".csv", getCacheDir());
         try(FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
             byte[] dummy = new byte[500];
-            int ch = 0;
+            int ch;
             while ((ch = inputStream.read(dummy)) != -1) {
                 fileOutputStream.write(dummy, 0, ch);
             }
@@ -207,16 +206,16 @@ public class BluetoothService extends Service {
         Telemetry telemetry = new Telemetry();
         telemetry.setLatitude(StreamHelper.readDouble(inputStream));
         telemetry.setLongitude(StreamHelper.readDouble(inputStream));
-        telemetry.setDistance(StreamHelper.readDouble(inputStream));
-        telemetry.setMonth(StreamHelper.readInt(inputStream));
-        telemetry.setDay(StreamHelper.readInt(inputStream));
-        telemetry.setYear(StreamHelper.readInt(inputStream));
-        telemetry.setHour(StreamHelper.readInt(inputStream));
-        telemetry.setMinute(StreamHelper.readInt(inputStream));
-        telemetry.setSecond(StreamHelper.readInt(inputStream));
-        telemetry.setMillisecond(StreamHelper.readInt(inputStream));
-        telemetry.setSpeed(StreamHelper.readDouble(inputStream));
         telemetry.setAltitude(StreamHelper.readDouble(inputStream));
+        telemetry.setDistance(StreamHelper.readDouble(inputStream));
+        telemetry.setSpeed(StreamHelper.readDouble(inputStream));
+        telemetry.setYear(StreamHelper.readShort(inputStream));
+        telemetry.setMonth(inputStream.read());
+        telemetry.setDay(inputStream.read());
+        telemetry.setHour(inputStream.read());
+        telemetry.setMinute(inputStream.read());
+        telemetry.setSecond(inputStream.read());
+        telemetry.setMillisecond(StreamHelper.readShort(inputStream));
         telemetry.setRoll(StreamHelper.readInt(inputStream));
         telemetry.setPitch(StreamHelper.readInt(inputStream));
         telemetry.setXg(StreamHelper.readDouble(inputStream));

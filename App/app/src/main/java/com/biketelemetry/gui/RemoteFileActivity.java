@@ -33,7 +33,7 @@ public class RemoteFileActivity extends AppCompatActivity {
     private ServiceConnection bluetoothServiceConnection;
     private List<TelemetryFileListEntry> fileList;
 
-    RemoteFileActivity() {
+    public RemoteFileActivity() {
         bluetoothServiceInput = null;
         bluetoothServiceReply = new Messenger(new Handler() {
             @Override
@@ -49,10 +49,9 @@ public class RemoteFileActivity extends AppCompatActivity {
             @Override
             public void onServiceConnected(ComponentName className,
                                            IBinder service) {
-
-                Toast.makeText(RemoteFileActivity.this, "connected", Toast.LENGTH_SHORT).show();
                 bluetoothServiceInput = new Messenger(service);
                 bluetoothServiceBound = true;
+                getFiles();
             }
 
             @Override
@@ -74,7 +73,7 @@ public class RemoteFileActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new RecyclerAdapter(fileList));
         registerForContextMenu(recyclerView);
-        getFiles();
+        //getFiles();
     }
 
     @Override
@@ -82,7 +81,7 @@ public class RemoteFileActivity extends AppCompatActivity {
         super.onResume();
 
         fileList.clear();
-        getFiles();
+        //getFiles();
     }
 
     @Override

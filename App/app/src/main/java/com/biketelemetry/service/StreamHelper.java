@@ -7,23 +7,29 @@ import java.nio.ByteBuffer;
 public class StreamHelper {
     public static String readString(InputStream stream, int length) throws IOException {
         StringBuilder sb = new StringBuilder();
-        int ch = 0;
-        while ((ch = stream.read()) != -1) {
+        int ch;
+        while ((ch = stream.read()) != -1 && sb.length() < length) {
             sb.append((char) ch);
         }
 
         return sb.toString();
     }
 
+    public static short readShort(InputStream stream) throws IOException {
+        return createBuffer(stream, 2).getShort();
+    }
+
     public static int readInt(InputStream stream) throws IOException {
-        byte[] dummy = new byte[4];
-        stream.read(dummy);
-        return ByteBuffer.wrap(dummy).getInt();
+        return createBuffer(stream, 4).getInt();
     }
 
     public static double readDouble(InputStream stream) throws IOException {
-        byte[] dummy = new byte[8];
+        return createBuffer(stream, 8).getDouble();
+    }
+
+    private static ByteBuffer createBuffer(InputStream stream, int length) throws IOException {
+        byte[] dummy = new byte[length];
         stream.read(dummy);
-        return ByteBuffer.wrap(dummy).getDouble();
+        return ByteBuffer.wrap(dummy);
     }
 }
