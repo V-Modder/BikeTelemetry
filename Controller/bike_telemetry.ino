@@ -4,7 +4,7 @@
 #include <BluetoothSerial.h>
 #include <SD.h>
 
-#include "version.h"
+#include "include/version.h"
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -85,7 +85,6 @@ void setup() {
   Serial.print(SD.totalBytes() / 1024);
   Serial.println("mb");
   SD.mkdir(FILE_PATH);
-  Serial.println(getFileList());
   String newFile = getNewFileName();
   Serial.println(newFile);
   DATA_FILE = SD.open(newFile, FILE_WRITE);
@@ -99,7 +98,7 @@ void setup() {
 }
 
 String getApplicationName() {
-  return F("MyTelemetry Project V" + VERSION)
+  return "MyTelemetry Project V" + String(VERSION);
 }
 
 String getNewFileName() {
@@ -124,7 +123,7 @@ void loop() {
     if (gps.encode(ss.read())) {
       //displayInfo();
       if (gps.location.isValid()) {
-        Telemetry telemetry = getDisplayInfo();  
+        Telemetry telemetry = getTelemetry();  
         writeToSd(telemetry);
         if(SendBTTelemetry) {
           writeTelemetry(telemetry);
@@ -146,45 +145,45 @@ void loop() {
   }
 }
 
-Telemetry getDisplayInfo() {
-  Telemetry telemetry = new Telemetry();
+Telemetry getTelemetry() {
+  Telemetry telemetry;
 
   if (gps.location.isValid()) {
-    telemetry->latitude = gps.location.lat();
-    telemetry->longitude = gps.location.lng();
+    telemetry.latitude = gps.location.lat();
+    telemetry.longitude = gps.location.lng();
 
     if (Start_LAT == 0.000000  && Start_LNG == 0.000000) {
       Start_CalculateDistance = true;
-      Start_LAT = telemetry->latitude;
-      Start_LNG = telemetry->longitude;
+      Start_LAT = telemetry.latitude;
+      Start_LNG = telemetry.longitude;
     }
     if (Start_CalculateDistance) {
-      telemetry->distanceMeters = gps.distanceBetween(telemetry->latitude, telemetry->longitude, Start_LAT, Start_LNG);
-      Start_LAT = telemetry->latitude;
-      Start_LNG = telemetry->longitude;
+      telemetry.distance = gps.distanceBetween(telemetry.latitude, telemetry.longitude, Start_LAT, Start_LNG);
+      Start_LAT = telemetry.latitude;
+      Start_LNG = telemetry.longitude;
     }
   }
 
   if (gps.date.isValid()) {
-    telemetry->month = gps.date.month();
-    telemetry->day = gps.date.day();
-    telemetry->year = gps.date.year()
-    telemetry->hour = gps.time.hour();
-    telemetry->minute = gps.time.minute();
-    telemetry->second = gps.time.second();
-    telemetry->millisecond = gps.time.centisecond() * 100;
+    telemetry.year = gps.date.year();
+    telemetry.month = gps.date.month();
+    telemetry.day = gps.date.day();
+    telemetry.hour = gps.time.hour();
+    telemetry.minute = gps.time.minute();
+    telemetry.second = gps.time.second();
+    telemetry.millisecond = gps.time.centisecond() * 100;
   }
 
-  telemetry->speed = gps.speed.kmph();
-  telemetry->altitude = gps.altitude.meters();
-  telemetry->satellites = gps.satellites.value();
-  telemetry->hdop = gps.hdop.value();
+  telemetry.speed = gps.speed.kmph();
+  telemetry.altitude = gps.altitude.meters();
+  telemetry.satellites = gps.satellites.value();
+  telemetry.hdop = gps.hdop.value();
 
-  telemetry->roll = 0:
-  telemetry->pitch = 0;
-  telemetry->xg = 0.0;
-  telemetry->yg = 0.0;
-  telemetry->zg = 0.0;
+  telemetry.roll = 0;
+  telemetry.pitch = 0;
+  telemetry.xg = 0.0;
+  telemetry.yg = 0.0;
+  telemetry.zg = 0.0;
   
   return telemetry;
 }
@@ -195,23 +194,36 @@ void readBTCommands() {
   Serial.println("BT-Command: " + cmd);
 
   if(REQUEST_TAG_DEVICE_INFO == cmd) {
-    writeString(getApplicationName(), 25)
+    writeString(getApplicationName(), 25);
   }
   else if(REQUEST_TAG_GET_FILE_LIST == cmd) {
     Serial.println("BT-Sending file-list");
     writeFileList();
   }
   else if(REQUEST_TAG_GET_FILE == cmd) {
+    String value = readString(25);
     Serial.println("BT-Sending file: " + value);
     sendFile(value);
   }
   else if(REQUEST_TAG_DELETE_FILE == cmd) {
+    String value = readString(25);
     Serial.println("BT-Removing file: " + value);
     removeFile(value);
   }
   else if(REQUEST_TAG_ENABLE_TELEMETRY == cmd) {
     SendBTTelemetry = SerialBT.read() != 0;
   }
+}
+
+String readString(int length) {
+  String str = "";
+  int i = 0;
+  while(SerialBT.available() && i >= length) {
+    str += SerialBT.read();
+    i++;
+  }
+  
+  return str;
 }
 
 String split(String data, char separator, int index) {
@@ -267,20 +279,20 @@ String formatLeadingZero(int number, int digits) {
 }
 
 void writeToSd(Telemetry &telemetry) {
-  String line = String(telemetry->latitude, 6);
-  line += "|" + String(telemetry->longitude, 6);
-  line += "|" + String(telemetry->altitude, 6);
-  line += "|" + String(telemetry->distance, 1);
-  line += "|" + String(telemetry->speed);
-  line += "|" + String(telemetry->month);
-  line += "|" + String(telemetry->day);
-  line += "|" + String(telemetry->year);
-  line += "|" + String(telemetry->hour);
-  line += "|" + String(telemetry->minute);
-  line += "|" + String(telemetry->second);
-  line += "|" + String(telemetry->millisecond);
-  line += "|" + String(telemetry->satellites);
-  line += "|" + String(telemetry->hdop);
+  String line = String(telemetry.latitude, 6);
+  line += "|" + String(telemetry.longitude, 6);
+  line += "|" + String(telemetry.altitude, 6);
+  line += "|" + String(telemetry.distance, 1);
+  line += "|" + String(telemetry.speed);
+  line += "|" + String(telemetry.month);
+  line += "|" + String(telemetry.day);
+  line += "|" + String(telemetry.year);
+  line += "|" + String(telemetry.hour);
+  line += "|" + String(telemetry.minute);
+  line += "|" + String(telemetry.second);
+  line += "|" + String(telemetry.millisecond);
+  line += "|" + String(telemetry.satellites);
+  line += "|" + String(telemetry.hdop);
 
   DATA_FILE.println(line);
   DATA_FILE.flush();
@@ -310,31 +322,31 @@ void writeFileList() {
 
 void writeTelemetry(Telemetry &telemetry) {
   SerialBT.write(RESPONSE_TAG_TELEMETRY);
-  writeDouble(telemetry->latitude);
-  writeDouble(telemetry->longitude);
-  writeDouble(telemetry->altitude);
-  writeDouble(telemetry->distance);
-  writeDouble(telemetry->speed);
-  writeShort(telemetry->year);
-  SerialBT.write(telemetry->month);
-  SerialBT.write(telemetry->day);
-  SerialBT.write(telemetry->hour);
-  SerialBT.write(telemetry->minute);
-  SerialBT.write(telemetry->second);
-  writeShort(telemetry->millisecond);
-  SerialBT.write(telemetry->satellites);
-  SerialBT.write(telemetry->hdop);
-  writeInt(telemetry->roll);
-  writeInt(telemetry->pitch);
-  writeDouble(telemetry->xg);
-  writeDouble(telemetry->yg);
-  writeDouble(telemetry->zg);
+  writeDouble(telemetry.latitude);
+  writeDouble(telemetry.longitude);
+  writeDouble(telemetry.altitude);
+  writeDouble(telemetry.distance);
+  writeDouble(telemetry.speed);
+  writeShort(telemetry.year);
+  SerialBT.write(telemetry.month);
+  SerialBT.write(telemetry.day);
+  SerialBT.write(telemetry.hour);
+  SerialBT.write(telemetry.minute);
+  SerialBT.write(telemetry.second);
+  writeShort(telemetry.millisecond);
+  SerialBT.write(telemetry.satellites);
+  SerialBT.write(telemetry.hdop);
+  writeInt(telemetry.roll);
+  writeInt(telemetry.pitch);
+  writeDouble(telemetry.xg);
+  writeDouble(telemetry.yg);
+  writeDouble(telemetry.zg);
 }
 
 void writeFileListEntry(String name, unsigned long size) {
   SerialBT.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY);
   writeInt(size);
-  writeString(name, 25)
+  writeString(name, 25);
 }
 
 void writeInt(int value) {
@@ -362,13 +374,13 @@ void writeDouble(double value) {
 void writeString(String str, int size) {
   for(int i = 0; i < size; i++) {
     if(i < str.length()) {
-      SerialBT.write(str[i])
+      SerialBT.write(str[i]);
     }
     else {
       break;
     }
   }
-  SerialBT.write("\0");
+  SerialBT.write('\0');
 }
 
 void sendFile(String filename) {

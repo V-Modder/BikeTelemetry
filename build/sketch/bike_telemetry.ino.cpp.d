@@ -146,4 +146,5 @@ d:\workspace\BikeTelemetry\build\sketch\bike_telemetry.ino.cpp.o: \
  C:\Users\V-Modder\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.0\libraries\FS\src/FS.h \
  C:\Users\V-Modder\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.0\libraries\SPI\src/SPI.h \
  C:\Users\V-Modder\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.0\cores\esp32/esp32-hal-spi.h \
- C:\Users\V-Modder\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.0\libraries\SD\src/sd_defines.h
+ C:\Users\V-Modder\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.0\libraries\SD\src/sd_defines.h \
+ d:\workspace\BikeTelemetry\build\sketch\include/version.h

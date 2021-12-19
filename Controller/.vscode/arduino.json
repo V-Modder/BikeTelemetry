@@ -6,5 +6,5 @@
     "debugger": "jlink",
     "intelliSenseGen": "global",
     "configuration": "PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,LoopCore=1,EventsCore=1,DebugLevel=none",
-    "prebuild": "buildscript_versioning.py"
+    "prebuild": "python buildscript_versioning.py"
 }

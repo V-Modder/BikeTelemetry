@@ -5,28 +5,62 @@
 # 5 "d:\\workspace\\BikeTelemetry\\Controller\\bike_telemetry.ino" 2
 # 6 "d:\\workspace\\BikeTelemetry\\Controller\\bike_telemetry.ino" 2
 
+# 8 "d:\\workspace\\BikeTelemetry\\Controller\\bike_telemetry.ino" 2
 
 
 
+
+//https://github.com/espressif/arduino-esp32/issues/1745
+
+static const char REQUEST_TAG_DEVICE_INFO = 1;
+static const char REQUEST_TAG_GET_FILE_LIST = 2;
+static const char REQUEST_TAG_GET_FILE = 3;
+static const char REQUEST_TAG_DELETE_FILE = 4;
+static const char REQUEST_TAG_ENABLE_TELEMETRY = 5;
+
+static const char RESPONSE_TAG_DEVICE_INFO = 1;
+static const char RESPONSE_TAG_GET_FILE_LIST_ENTRY = 2;
+static const char RESPONSE_TAG_GET_FILE_LIST_ENTRY_END = 3;
+static const char RESPONSE_TAG_GET_FILE = 4;
+static const char RESPONSE_TAG_TELEMETRY = 5;
+static const char RESPONSE_TAG_ERROR = 255;
 
 static const int RXPin = 16, TXPin = 17;
 static const int GPSBaud = 9600;
 TinyGPSPlus gps;
-double Start_LAT = 0.0; // Per calcolo Distanza percorsa
-double Start_LNG = 0.0; // Per calcolo Distanza percorsa
-bool Start_CalculateDistance = false; // Per calcolo Distanza percorsa
+double Start_LAT = 0.0;
+double Start_LNG = 0.0;
+bool Start_CalculateDistance = false;
 SoftwareSerial ss(RXPin, TXPin);
 
 BluetoothSerial SerialBT;
-String ENABLE_BT_TELEMENTRY = "enable_bt_telemetry";
-String GET_FILE_LIST = "get_file_list";
-String GET_FILE = "get_file";
-String REMOVE_FILE = "remove_file";
 bool SendBTTelemetry = false;
 
 const int CHIP_SELECT = 5;
 String FILE_PATH = "/test";
 File DATA_FILE;
+
+struct Telemetry {
+  double latitude;
+  double longitude;
+  double altitude;
+  double distance;
+  double speed;
+  short year;
+  char month;
+  char day;
+  char hour;
+  char minute;
+  char second;
+  short millisecond;
+  char satellites;
+  char hdop;
+  int roll;
+  int pitch;
+  double xg;
+  double yg;
+  double zg;
+};
 
 void setup() {
   // GPS Inizialize
@@ -52,7 +86,6 @@ void setup() {
   Serial.print(SD.totalBytes() / 1024);
   Serial.println("mb");
   SD.mkdir(FILE_PATH);
-  Serial.println(getFileList());
   String newFile = getNewFileName();
   Serial.println(newFile);
   DATA_FILE = SD.open(newFile, "w");
@@ -60,9 +93,13 @@ void setup() {
     Serial.println("Cannot create file " + newFile);
     while(true);
   }
-  Serial.print(((reinterpret_cast<const __FlashStringHelper *>(("MyTelemetry Project V 1.03 ")))));
+  Serial.print(getApplicationName());
   Serial.println(TinyGPSPlus::libraryVersion());
   Serial.println();
+}
+
+String getApplicationName() {
+  return "MyTelemetry Project V" + String("v0.1.7 - 2021-12-19 19:26:35.226550");
 }
 
 String getNewFileName() {
@@ -87,12 +124,10 @@ void loop() {
     if (gps.encode(ss.read())) {
       //displayInfo();
       if (gps.location.isValid()) {
-        String strMessage = getDisplayInfo();
-        // comment the line below before deploy
-        Serial.println(strMessage);
-        writeToSd(strMessage);
+        Telemetry telemetry = getTelemetry();
+        writeToSd(telemetry);
         if(SendBTTelemetry) {
-          writeToBt(strMessage);
+          writeTelemetry(telemetry);
         }
       }
       else {
@@ -111,197 +146,85 @@ void loop() {
   }
 }
 
-String getDisplayInfo() {
-  double distanceMeters = 0.0;
-
-  /* ARRAY DEFINITION:
-
-     01 - Latitude
-
-     02 - N (Nord)
-
-     03 - Longitude
-
-     04 - E (East)
-
-     05 - distance
-
-     06 - month
-
-     07 - day
-
-     08 - year
-
-     09 - hour
-
-     10 - minute
-
-     11 - second
-
-     12 - millisecond
-
-     13 - speed (Km/h)
-
-     14 - altitude (m)
-
-     15 - satellites (number of satellites)
-
-     16 - hdop (number of satellites in use)
-
-     17 - roll
-
-     18 - pitch
-
-     19 - Xg
-
-     20 - Yg
-
-     21 - Zg
-
-  */
-# 140 "d:\\workspace\\BikeTelemetry\\Controller\\bike_telemetry.ino"
-  String strMessage = "TELEMETRY|";
+Telemetry getTelemetry() {
+  Telemetry telemetry;
 
   if (gps.location.isValid()) {
-    double latitude = gps.location.lat();
-    double longitude = gps.location.lng();
+    telemetry.latitude = gps.location.lat();
+    telemetry.longitude = gps.location.lng();
 
     if (Start_LAT == 0.000000 && Start_LNG == 0.000000) {
       Start_CalculateDistance = true;
-      Start_LAT = latitude;
-      Start_LNG = longitude;
+      Start_LAT = telemetry.latitude;
+      Start_LNG = telemetry.longitude;
     }
     if (Start_CalculateDistance) {
-      distanceMeters = gps.distanceBetween(latitude, longitude, Start_LAT, Start_LNG);
-      Start_LAT = latitude;
-      Start_LNG = longitude;
+      telemetry.distance = gps.distanceBetween(telemetry.latitude, telemetry.longitude, Start_LAT, Start_LNG);
+      Start_LAT = telemetry.latitude;
+      Start_LNG = telemetry.longitude;
     }
-
-    strMessage += String(latitude, 6); // 1
-    strMessage += "|N|"; // 2
-    strMessage += String(longitude, 6); // 3
-    strMessage += "|E|"; // 4
-    strMessage += String(distanceMeters, 1); // 5
-  }
-  else
-  {
-    strMessage = "INVALID"; // 1
-    strMessage += "|N"; // 2
-    strMessage += "|INVALID"; // 3
-    strMessage += "|E"; // 4
-    strMessage += "|INVALID"; // 5
   }
 
-  /*
-
-    Serial.print("Sentences that failed checksum=");
-
-    Serial.println(gps.failedChecksum());
-
-    // Testing overflow in SoftwareSerial is sometimes useful too.
-
-    Serial.print("Soft Serial device overflowed? ");
-
-    Serial.println(ss.overflow() ? "YES!" : "No");
-
-    Serial.print("charsProcessed ");
-
-    Serial.println(gps.charsProcessed());
-
-    Serial.print("sentencesWithFix ");
-
-    Serial.println(gps.sentencesWithFix());
-
-    Serial.print("passedChecksum ");
-
-    Serial.println(gps.passedChecksum());
-
-  */
-# 187 "d:\\workspace\\BikeTelemetry\\Controller\\bike_telemetry.ino"
-  // Data
   if (gps.date.isValid()) {
-    strMessage += gps.date.month(); // 6
-    strMessage += "|";
-    strMessage += gps.date.day(); // 7
-    strMessage += "|";
-    strMessage += gps.date.year(); // 8
-    strMessage += "|";
-    strMessage += gps.time.hour(); // 9
-    strMessage += "|";
-    strMessage += gps.time.minute(); // 10
-    strMessage += "|";
-    strMessage += gps.time.second(); // 11
-    strMessage += "|";
-    strMessage += gps.time.centisecond() * 100; // 12
-    strMessage += "|";
-  }
-  else {
-    strMessage += "INVALID"; // 6
-    strMessage += "|";
-    strMessage += "INVALID"; // 7
-    strMessage += "|";
-    strMessage += "INVALID"; // 8
-    strMessage += "|";
-    strMessage += "INVALID"; // 9
-    strMessage += "|";
-    strMessage += "INVALID"; // 10
-    strMessage += "|";
-    strMessage += "INVALID"; // 11
-    strMessage += "|";
-    strMessage += "INVALID"; // 12
-    strMessage += "|";
+    telemetry.year = gps.date.year();
+    telemetry.month = gps.date.month();
+    telemetry.day = gps.date.day();
+    telemetry.hour = gps.time.hour();
+    telemetry.minute = gps.time.minute();
+    telemetry.second = gps.time.second();
+    telemetry.millisecond = gps.time.centisecond() * 100;
   }
 
-  // Speed
-  strMessage += gps.speed.kmph(); // 13
-  strMessage += "|";
-  // Altitude
-  double alt = gps.altitude.meters(); // 14
-  strMessage += String(alt, 6);
-  strMessage += "|";
+  telemetry.speed = gps.speed.kmph();
+  telemetry.altitude = gps.altitude.meters();
+  telemetry.satellites = gps.satellites.value();
+  telemetry.hdop = gps.hdop.value();
 
-  // Number of satellites in use (u32)
-  strMessage += String(gps.satellites.value()); // 15
-  strMessage += "|";
-  // Number of satellites in use (u32)
-  strMessage += String(gps.hdop.value()); // 16
+  telemetry.roll = 0;
+  telemetry.pitch = 0;
+  telemetry.xg = 0.0;
+  telemetry.yg = 0.0;
+  telemetry.zg = 0.0;
 
-  return strMessage;
+  return telemetry;
 }
 
 void readBTCommands() {
-  String line = "";
-  while(SerialBT.available()) {
-    char c = SerialBT.read();
-    if(c != '\n' && c != '\r') {
-      line += c;
-    }
-  }
+  char cmd = SerialBT.read();
 
-  Serial.println("BT-Line: " + line);
-  String cmd = split(line, '|', 0);
-  String value = split(line, '|', 1);
-
-  if(cmd == "") {
-    cmd = line;
-  }
   Serial.println("BT-Command: " + cmd);
 
-  if(ENABLE_BT_TELEMENTRY == cmd) {
-    SendBTTelemetry = value == "1";
+  if(REQUEST_TAG_DEVICE_INFO == cmd) {
+    writeString(getApplicationName(), 25);
   }
-  else if(GET_FILE_LIST.equals(cmd)) {
+  else if(REQUEST_TAG_GET_FILE_LIST == cmd) {
     Serial.println("BT-Sending file-list");
-    writeToBt(getFileList());
+    writeFileList();
   }
-  else if(GET_FILE.equals(cmd)) {
+  else if(REQUEST_TAG_GET_FILE == cmd) {
+    String value = readString(25);
     Serial.println("BT-Sending file: " + value);
     sendFile(value);
   }
-  else if(REMOVE_FILE.equals(cmd)) {
+  else if(REQUEST_TAG_DELETE_FILE == cmd) {
+    String value = readString(25);
     Serial.println("BT-Removing file: " + value);
     removeFile(value);
   }
+  else if(REQUEST_TAG_ENABLE_TELEMETRY == cmd) {
+    SendBTTelemetry = SerialBT.read() != 0;
+  }
+}
+
+String readString(int length) {
+  String str = "";
+  int i = 0;
+  while(SerialBT.available() && i >= length) {
+    str += SerialBT.read();
+    i++;
+  }
+
+  return str;
 }
 
 String split(String data, char separator, int index) {
@@ -356,8 +279,23 @@ String formatLeadingZero(int number, int digits) {
   return prefix + String(number);
 }
 
-void writeToSd(String msg) {
-  DATA_FILE.println(msg);
+void writeToSd(Telemetry &telemetry) {
+  String line = String(telemetry.latitude, 6);
+  line += "|" + String(telemetry.longitude, 6);
+  line += "|" + String(telemetry.altitude, 6);
+  line += "|" + String(telemetry.distance, 1);
+  line += "|" + String(telemetry.speed);
+  line += "|" + String(telemetry.month);
+  line += "|" + String(telemetry.day);
+  line += "|" + String(telemetry.year);
+  line += "|" + String(telemetry.hour);
+  line += "|" + String(telemetry.minute);
+  line += "|" + String(telemetry.second);
+  line += "|" + String(telemetry.millisecond);
+  line += "|" + String(telemetry.satellites);
+  line += "|" + String(telemetry.hdop);
+
+  DATA_FILE.println(line);
   DATA_FILE.flush();
 }
 
@@ -365,25 +303,85 @@ void writeToBt(String msg) {
   SerialBT.println(msg);
 }
 
-String getFileList() {
+void writeFileList() {
   File dir = SD.open(FILE_PATH);
-  String files = "FILE_LIST";
   File entry = dir.openNextFile();
+
   while(entry) {
     if (!entry.isDirectory()) {
       String name = String(entry.name());
       if(name.endsWith(".csv") && name != DATA_FILE.name()) {
-        files += "|";
-        files += name;
-        files += ",";
-        files += entry.size();
+        writeFileListEntry(name, entry.size());
       }
     }
     entry.close();
     entry = dir.openNextFile();
   }
 
-  return files;
+  SerialBT.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY_END);
+}
+
+void writeTelemetry(Telemetry &telemetry) {
+  SerialBT.write(RESPONSE_TAG_TELEMETRY);
+  writeDouble(telemetry.latitude);
+  writeDouble(telemetry.longitude);
+  writeDouble(telemetry.altitude);
+  writeDouble(telemetry.distance);
+  writeDouble(telemetry.speed);
+  writeShort(telemetry.year);
+  SerialBT.write(telemetry.month);
+  SerialBT.write(telemetry.day);
+  SerialBT.write(telemetry.hour);
+  SerialBT.write(telemetry.minute);
+  SerialBT.write(telemetry.second);
+  writeShort(telemetry.millisecond);
+  SerialBT.write(telemetry.satellites);
+  SerialBT.write(telemetry.hdop);
+  writeInt(telemetry.roll);
+  writeInt(telemetry.pitch);
+  writeDouble(telemetry.xg);
+  writeDouble(telemetry.yg);
+  writeDouble(telemetry.zg);
+}
+
+void writeFileListEntry(String name, unsigned long size) {
+  SerialBT.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY);
+  writeInt(size);
+  writeString(name, 25);
+}
+
+void writeInt(int value) {
+  SerialBT.write((byte) value);
+  SerialBT.write((byte) value >> 8);
+  SerialBT.write((byte) value >> 16);
+  SerialBT.write((byte) value >> 24);
+}
+
+void writeShort(short value) {
+  SerialBT.write((byte) value);
+  SerialBT.write((byte) value >> 8);
+}
+
+void writeDouble(double value) {
+  uint8_t *bytePointer = (uint8_t *)&value;
+
+  for(size_t index = 0; index < sizeof(double); index++) {
+    uint8_t byte = bytePointer[index];
+
+    SerialBT.write(byte);
+  }
+}
+
+void writeString(String str, int size) {
+  for(int i = 0; i < size; i++) {
+    if(i < str.length()) {
+      SerialBT.write(str[i]);
+    }
+    else {
+      break;
+    }
+  }
+  SerialBT.write('\0');
 }
 
 void sendFile(String filename) {
