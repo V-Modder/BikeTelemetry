@@ -29,6 +29,7 @@ hf = """
 #endif
 """.format(build_no, version+str(build_no), datetime.datetime.now(), version+str(build_no))
 
-os.mkdir(FILENAME_INCLUDE_PATH)
+if not os.path.isfile(FILENAME_INCLUDE_PATH):
+    os.mkdir(FILENAME_INCLUDE_PATH)
 with open(FILENAME_VERSION_H, 'w+') as f:
     f.write(hf)

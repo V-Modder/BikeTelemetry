@@ -24,32 +24,34 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class BluetoothService extends Service {
     //https://www.c-sharpcorner.com/article/bound-service-using-messenger-in-android-part-3/
-    public static final byte RESPONSE_TAG_DEVICE_INFO = 1;
-    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRY = 2;
-    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRY_END = 3;
-    public static final byte RESPONSE_TAG_GET_FILE = 4;
-    public static final byte RESPONSE_TAG_GET_FILE_END = 5;
-    public static final byte RESPONSE_TAG_TELEMETRY = 6;
+    public static final byte RESPONSE_TAG_DEVICE_CONNECTED = 1;
+    public static final byte RESPONSE_TAG_DEVICE_INFO = 2;
+    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRY = 3;
+    public static final byte RESPONSE_TAG_GET_FILE_LIST_ENTRY_END = 4;
+    public static final byte RESPONSE_TAG_GET_FILE = 5;
+    public static final byte RESPONSE_TAG_GET_FILE_END = 6;
+    public static final byte RESPONSE_TAG_TELEMETRY = 7;
     public static final byte RESPONSE_TAG_ERROR = (byte) 255;
 
     private static final String TELEMETRY_DEVICE_NAME = "Bike-Telemetry";
 
-    public static final byte REQUEST_TAG_DEVICE_INFO = 1;
-    public static final byte REQUEST_TAG_GET_FILE_LIST = 2;
-    public static final byte REQUEST_TAG_GET_FILE = 3;
-    public static final byte REQUEST_TAG_DELETE_FILE = 4;
-    public static final byte REQUEST_TAG_ENABLE_TELEMETRY = 5;
-
+    public static final byte IS_DEVICE_CONNECTED = 1;
+    public static final byte REQUEST_TAG_DEVICE_INFO = 2;
+    public static final byte REQUEST_TAG_GET_FILE_LIST = 3;
+    public static final byte REQUEST_TAG_GET_FILE = 4;
+    public static final byte REQUEST_TAG_DELETE_FILE = 5;
+    public static final byte REQUEST_TAG_ENABLE_TELEMETRY = 6;
 
     private BluetoothSocket socket;
     private boolean interrupted;
-    private Messenger replyMessanger;
-    private Messenger inputMessanger;
+    private Messenger replyMessenger;
+    private Messenger inputMessenger;
 
     class IncomingHandler extends Handler {
         private Context applicationContext;
@@ -61,19 +63,23 @@ public class BluetoothService extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
+                case IS_DEVICE_CONNECTED:
+                    replyMessenger = msg.replyTo;
+                    BluetoothService.this.isDeviceConnected();
+                    break;
                 case REQUEST_TAG_DEVICE_INFO:
                     Toast.makeText(applicationContext, "REQUEST_TAG_DEVICE_INFO!", Toast.LENGTH_SHORT).show();
-                    replyMessanger = msg.replyTo;
+                    replyMessenger = msg.replyTo;
                     BluetoothService.this.requestDeviceInfo();
                     break;
                 case REQUEST_TAG_GET_FILE_LIST:
                     Toast.makeText(applicationContext, "REQUEST_TAG_GET_FILE_LIST!", Toast.LENGTH_SHORT).show();
-                    replyMessanger = msg.replyTo;
+                    replyMessenger = msg.replyTo;
                     BluetoothService.this.requestFileList();
                     break;
                 case REQUEST_TAG_GET_FILE:
                     Toast.makeText(applicationContext, "REQUEST_TAG_GET_FILE!", Toast.LENGTH_SHORT).show();
-                    replyMessanger = msg.replyTo;
+                    replyMessenger = msg.replyTo;
                     BluetoothService.this.requestFile((String)msg.obj);
                     break;
                 case REQUEST_TAG_DELETE_FILE:
@@ -82,12 +88,36 @@ public class BluetoothService extends Service {
                     break;
                 case REQUEST_TAG_ENABLE_TELEMETRY:
                     Toast.makeText(applicationContext, "REQUEST_TAG_ENABLE_TELEMETRY!", Toast.LENGTH_SHORT).show();
-                    replyMessanger = msg.replyTo;
+                    replyMessenger = msg.replyTo;
                     BluetoothService.this.requestEnableTelemetry(msg.arg1 == 1);
                     break;
                 default:
                     super.handleMessage(msg);
             }
+        }
+    }
+
+    private void isDeviceConnected() {
+        Optional<BluetoothDevice> telemetryDevice = getTelemetryDevice();
+        boolean isConnected = false;
+        if(telemetryDevice.isPresent()) {
+            try {
+                Method isConnectedMethod = telemetryDevice.get().getClass().getMethod("isConnected");
+                if((boolean) isConnectedMethod.invoke(telemetryDevice.get())) {
+                    isConnected = true;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        Message msg = new Message();
+        msg.what = RESPONSE_TAG_DEVICE_CONNECTED;
+        msg.obj = isConnected;
+        try {
+            replyMessenger.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
 
@@ -242,7 +272,7 @@ public class BluetoothService extends Service {
         }
 
         try {
-            replyMessanger.send(msg);
+            replyMessenger.send(msg);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -253,8 +283,8 @@ public class BluetoothService extends Service {
     public IBinder onBind(Intent intent) {
         interrupted = false;
         Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT).show();
-        inputMessanger = new Messenger(new IncomingHandler(this));
-        return inputMessanger.getBinder();
+        inputMessenger = new Messenger(new IncomingHandler(this));
+        return inputMessenger.getBinder();
     }
 
     @Override

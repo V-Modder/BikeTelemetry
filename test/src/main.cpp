@@ -1,29 +1,18 @@
+#include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <Wire.h>
 #include <TinyGPSPlus.h>
 #include <BluetoothSerial.h>
 #include <SD.h>
 
-#include "include/version.h"
+//#include "include/version.h"
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 //https://github.com/espressif/arduino-esp32/issues/1745
 
-static const char REQUEST_TAG_DEVICE_INFO = 1;
-static const char REQUEST_TAG_GET_FILE_LIST = 2;
-static const char REQUEST_TAG_GET_FILE = 3;
-static const char REQUEST_TAG_DELETE_FILE = 4;
-static const char REQUEST_TAG_ENABLE_TELEMETRY = 5;
 
-static const char RESPONSE_TAG_DEVICE_INFO = 1;
-static const char RESPONSE_TAG_GET_FILE_LIST_ENTRY = 2;
-static const char RESPONSE_TAG_GET_FILE_LIST_ENTRY_END = 3;
-static const char RESPONSE_TAG_GET_FILE = 4;
-static const char RESPONSE_TAG_GET_FILE_END = 5;
-static const char RESPONSE_TAG_TELEMETRY = 6;
-static const char RESPONSE_TAG_ERROR = 255;
 
 static const int RXPin = 16, TXPin = 17;
 static const int GPSBaud = 9600;
@@ -40,27 +29,7 @@ const int CHIP_SELECT = 5;
 String FILE_PATH = "/test";
 File DATA_FILE;
 
-struct Telemetry {
-  double latitude;
-  double longitude;
-  double altitude;
-  double distance;
-  double speed;
-  short year;
-  char month;
-  char day;
-  char hour;
-  char minute;
-  char second;
-  short millisecond;
-  char satellites;
-  char hdop;
-  int roll;
-  int pitch;
-  double xg;
-  double yg;
-  double zg;
-};
+
 
 void setup() {
   // GPS Inizialize
