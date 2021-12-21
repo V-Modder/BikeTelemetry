@@ -12,6 +12,7 @@ BikeTelemetry::BikeTelemetry()
 
 bool BikeTelemetry::begin() {
     gpsSerial.begin(GPS_BAUD, SWSERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN, false);
+    
 }
 
 
