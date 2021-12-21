@@ -1,13 +1,11 @@
 #include "Bluetooth.h"
 
-#include <Storage.h>
-
 Bluetooth::Bluetooth()
 {
     sendTelemetry = false;
 }
 
-bool Bluetooth::begin(String applicatoinName, Storage &storage) {
+bool Bluetooth::begin(String applicatoinName, Storage storage) {
     this->applicationName = applicationName;
     this->storage = storage;
     return bluetoothSerial.begin("Bike-Telemetry");
@@ -71,12 +69,12 @@ String Bluetooth::readString(int length)
 
 void Bluetooth::writeFileList()
 {
-    FileListEntry* entries;
-    int count = storage.getFileList(entries);
+    FileList list = storage.getFileList();
 
-    for(int i = 0; i < count; i++) {
-        writeFileListEntry(entries[i].name, entries[i].size);
+    for(int i = 0; i < list.size; i++) {
+        writeFileListEntry(list.entries[i].name, list.entries[i].size);
     }
+    free(list.entries);
 
     bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY_END);
 }

@@ -1,16 +1,19 @@
 #ifndef BLUETOOTH_H_   /* Include guard */
 #define BLUETOOTH_H_
 
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+/*#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
+#endif*/
 
 #include "BikeTelemetry.h"
+
+#include <Storage.h>
+#include <BluetoothSerial.h>
 
 class Bluetooth {
     public:
         Bluetooth();
-        bool begin(String applicationName, Storage &storage);
+        bool begin(String applicationName, Storage storage);
         bool inputAvailable();
         void handleCommands();
         bool isSendTelemetry();

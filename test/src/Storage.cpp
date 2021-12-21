@@ -1,8 +1,6 @@
 #include <Storage.h>
 
-Storage::Storage()
-{
-}
+const String Storage::FILE_PATH = "/test";
 
 bool Storage::begin()
 {
@@ -144,7 +142,7 @@ void Storage::removeFile(String filename)
     }
 }
 
-int Storage::getFileList(FileListEntry* list) {
+FileList Storage::getFileList() {
     File dir = SD.open(FILE_PATH);
     File entry = dir.openNextFile();
 
@@ -163,7 +161,9 @@ int Storage::getFileList(FileListEntry* list) {
         entry = dir.openNextFile();
     }
 
-    FileListEntry list[fileCount];
+    FileList list;
+    list.size = fileCount;
+    list.entries = (FileListEntry*) malloc( sizeof(FileListEntry) * list.size);
     int i = 0;
     while (entry)
     {
@@ -172,8 +172,8 @@ int Storage::getFileList(FileListEntry* list) {
             String name = String(entry.name());
             if (name.endsWith(".csv") && name != currentDataFile.name())
             {
-                list[i].name = name;
-                list[i].size = entry.size();
+                list.entries[i].name = name;
+                list.entries[i].size = entry.size();
                 i++;
             }
         }
@@ -181,7 +181,7 @@ int Storage::getFileList(FileListEntry* list) {
         entry = dir.openNextFile();
     }
 
-    return fileCount;
+    return list;
 }
 
 File Storage::getFile(String name) {

@@ -31,7 +31,7 @@ struct Telemetry
 class BikeTelemetry {
     public:
         BikeTelemetry();
-        bool BikeTelemetry::begin()
+        bool begin();
         bool isAvailable();
         Telemetry getTelemetry();
     private:
@@ -43,7 +43,7 @@ class BikeTelemetry {
         bool startCalculateDistance;
         SoftwareSerial gpsSerial;
 
-        void prepareData
+        //void prepareData
 };
 
 #endif // BIKETELEMETRY_H_

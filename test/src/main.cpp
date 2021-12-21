@@ -1,11 +1,15 @@
 #include <BikeTelemetry.h>
 #include <Bluetooth.h>
 #include <Storage.h>
-#include "include/version.h"
+#include "version.h"
 
 BikeTelemetry bikeTelemetry;
-Bluetooth bluetooth(getApplicationName());
+Bluetooth bluetooth;
 Storage storage;
+
+String getApplicationName() {
+  return "BikeTelemetry V" + String(VERSION);
+}
 
 void setup() {
   // GPS Inizialize
@@ -15,7 +19,7 @@ void setup() {
   delay(3000);
   Serial.println("Setup GPS End");
 
-  bluetooth.begin();
+  bluetooth.begin(getApplicationName(), storage);
 
   if (!storage.begin()) {
     while (true);
@@ -25,25 +29,20 @@ void setup() {
   Serial.println();
 }
 
-String getApplicationName() {
-  return "BikeTelemetry V" + String(VERSION);
-}
-
 void loop() {
   if (bikeTelemetry.isAvailable()) {
-        Telemetry telemetry = bikeTelemetry.getTelemetry();  
-        writeToSd(telemetry);
-        if(bluetooth.isSendTelemetry()) {
-          bluetooth.writeTelemetry(telemetry);
-        }
-      }
-      else {
-        delay(5000);
-        Serial.println("wait position");
-      }
-      if (bluetooth.inputAvailable()) {
-        bluetooth.handleCommands();
-      }
+    Telemetry telemetry = bikeTelemetry.getTelemetry();  
+    storage.writeToSd(telemetry);
+    if(bluetooth.isSendTelemetry()) {
+      bluetooth.writeTelemetry(telemetry);
     }
+  }
+  else {
+    delay(5000);
+    Serial.println("wait position");
+  }
+  
+  if (bluetooth.inputAvailable()) {
+    bluetooth.handleCommands();
   }
 }
