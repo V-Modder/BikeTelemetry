@@ -1,11 +1,16 @@
 #include "Bluetooth.h"
 
-#include <BluetoothSerial.h>
+#include <Storage.h>
 
 Bluetooth::Bluetooth()
 {
     sendTelemetry = false;
-    bluetoothSerial.begin("Bike-Telemetry");
+}
+
+bool Bluetooth::begin(String applicatoinName, Storage &storage) {
+    this->applicationName = applicationName;
+    this->storage = storage;
+    return bluetoothSerial.begin("Bike-Telemetry");
 }
 
 bool Bluetooth::inputAvailable()
@@ -13,7 +18,7 @@ bool Bluetooth::inputAvailable()
     return bluetoothSerial.available();
 }
 
-void Bluetooth::readBTCommands()
+void Bluetooth::handleCommands()
 {
     char cmd = bluetoothSerial.read();
 
@@ -21,7 +26,7 @@ void Bluetooth::readBTCommands()
 
     if (REQUEST_TAG_DEVICE_INFO == cmd)
     {
-        writeString(getApplicationName(), 25);
+        writeString(applicationName, 25);
     }
     else if (REQUEST_TAG_GET_FILE_LIST == cmd)
     {
@@ -66,21 +71,11 @@ String Bluetooth::readString(int length)
 
 void Bluetooth::writeFileList()
 {
-    File dir = SD.open(FILE_PATH);
-    File entry = dir.openNextFile();
+    FileListEntry* entries;
+    int count = storage.getFileList(entries);
 
-    while (entry)
-    {
-        if (!entry.isDirectory())
-        {
-            String name = String(entry.name());
-            if (name.endsWith(".csv") && name != DATA_FILE.name())
-            {
-                writeFileListEntry(name, entry.size());
-            }
-        }
-        entry.close();
-        entry = dir.openNextFile();
+    for(int i = 0; i < count; i++) {
+        writeFileListEntry(entries[i].name, entries[i].size);
     }
 
     bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY_END);
@@ -161,10 +156,9 @@ void Bluetooth::writeString(String str, int size)
 
 void Bluetooth::sendFile(String filename)
 {
-    if (filename != DATA_FILE.name() && SD.exists(FILE_PATH + "/" + filename))
+    File file = storage.getFile(filename);
+    if (file)
     {
-        String filePath = FILE_PATH + "/" + filename;
-        File file = SD.open(filePath);
         bluetoothSerial.write(RESPONSE_TAG_GET_FILE);
         while (file.available())
         {
@@ -173,13 +167,12 @@ void Bluetooth::sendFile(String filename)
         bluetoothSerial.write(RESPONSE_TAG_GET_FILE_END);
         file.close();
     }
+    else {
+        bluetoothSerial.write(RESPONSE_TAG_ERROR);
+    }
 }
 
 void Bluetooth::removeFile(String filename)
 {
-    String filePath = FILE_PATH + "/" + filename;
-    if (SD.exists(filePath) && filename != DATA_FILE.name())
-    {
-        SD.remove(filePath);
-    }
+    storage.removeFile(filename);
 }

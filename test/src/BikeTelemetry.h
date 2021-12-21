@@ -31,6 +31,8 @@ struct Telemetry
 class BikeTelemetry {
     public:
         BikeTelemetry();
+        bool BikeTelemetry::begin()
+        bool isAvailable();
         Telemetry getTelemetry();
     private:
         static const int GPS_RX_PIN = 16, GPS_TX_PIN = 17;
@@ -40,6 +42,8 @@ class BikeTelemetry {
         double startLng;
         bool startCalculateDistance;
         SoftwareSerial gpsSerial;
+
+        void prepareData
 };
 
 #endif // BIKETELEMETRY_H_
