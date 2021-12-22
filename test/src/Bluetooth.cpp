@@ -8,7 +8,13 @@ Bluetooth::Bluetooth()
 bool Bluetooth::begin(String applicatoinName, Storage storage) {
     this->applicationName = applicationName;
     this->storage = storage;
-    return bluetoothSerial.begin("Bike-Telemetry");
+    if(bluetoothSerial.begin("Bike-Telemetry")) {
+        return true;
+    }
+    else {
+        Serial.println("Error starting bluetooth serial");
+        return false;
+    }
 }
 
 bool Bluetooth::inputAvailable()

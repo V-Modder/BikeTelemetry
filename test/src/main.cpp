@@ -19,10 +19,12 @@ void setup() {
   delay(3000);
   Serial.println("Setup GPS End");
 
-  bluetooth.begin(getApplicationName(), storage);
-
   if (!storage.begin()) {
     while (true);
+  }
+
+  if(bluetooth.begin(getApplicationName(), storage)) {
+    while(true);
   }
 
   Serial.print(getApplicationName());
