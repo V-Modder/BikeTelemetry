@@ -1,36 +1,39 @@
-#ifndef STORAGE_H_   /* Include guard */
+#ifndef STORAGE_H_ /* Include guard */
 #define STORAGE_H_
 
 #include <Arduino.h>
 #include <SD.h>
 #include <BikeTelemetry.h>
 
-struct FileListEntry {
+struct FileListEntry
+{
     String name;
     long size;
 };
 
-struct FileList {
+struct FileList
+{
     int size;
-    FileListEntry* entries;
+    FileListEntry *entries;
 };
 
-class Storage {
-    public:
-        bool begin();
-        void writeToSd(Telemetry &telemetry);
-        void removeFile(String filename);
-        FileList getFileList();
-        File getFile(String name);
+class Storage
+{
+public:
+    bool begin();
+    void writeToSd(Telemetry &telemetry);
+    void removeFile(String filename);
+    FileList getFileList();
+    File getFile(String name);
 
-    private:
-        static const int CHIP_SELECT = 5;
-        static const String FILE_PATH;
-        File currentDataFile;
+private:
+    static const int CHIP_SELECT = 5;
+    static const String FILE_PATH;
+    File currentDataFile;
 
-        String getNewFileName();
-        String split(String data, char separator, int index);
-        String formatLeadingZero(int number, int digits);
+    String getNewFileName();
+    String split(String data, char separator, int index);
+    String formatLeadingZero(int number, int digits);
 };
 
 #endif

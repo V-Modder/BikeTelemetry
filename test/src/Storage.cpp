@@ -15,12 +15,13 @@ bool Storage::begin()
     }
     else
     {
-        Serial.print("SD card size: ");
-        Serial.print(SD.totalBytes() / 1024);
-        Serial.println("mb");
+        Serial.print("\n    SD card size: ");
+        Serial.print(SD.totalBytes() / (1024 * 1024));
+        Serial.println(" mb");
 
         SD.mkdir(FILE_PATH);
         String newFile = getNewFileName();
+        Serial.print("\t");
         Serial.println(newFile);
         currentDataFile = SD.open(newFile, FILE_WRITE);
         if (!currentDataFile)
@@ -142,7 +143,8 @@ void Storage::removeFile(String filename)
     }
 }
 
-FileList Storage::getFileList() {
+FileList Storage::getFileList()
+{
     File dir = SD.open(FILE_PATH);
     File entry = dir.openNextFile();
 
@@ -163,7 +165,7 @@ FileList Storage::getFileList() {
 
     FileList list;
     list.size = fileCount;
-    list.entries = (FileListEntry*) malloc( sizeof(FileListEntry) * list.size);
+    list.entries = (FileListEntry *)malloc(sizeof(FileListEntry) * list.size);
     int i = 0;
     while (entry)
     {
@@ -184,13 +186,15 @@ FileList Storage::getFileList() {
     return list;
 }
 
-File Storage::getFile(String name) {
+File Storage::getFile(String name)
+{
     if (name != currentDataFile.name() && SD.exists(FILE_PATH + "/" + name))
     {
         String filePath = FILE_PATH + "/" + name;
         return SD.open(filePath);
     }
-    else {
+    else
+    {
         return File();
     }
 }

@@ -5,13 +5,16 @@ Bluetooth::Bluetooth()
     sendTelemetry = false;
 }
 
-bool Bluetooth::begin(String applicatoinName, Storage storage) {
+bool Bluetooth::begin(String applicatoinName, Storage &storage)
+{
     this->applicationName = applicationName;
     this->storage = storage;
-    if(bluetoothSerial.begin("Bike-Telemetry")) {
+    if (bluetoothSerial.begin("Bike-Telemetry"))
+    {
         return true;
     }
-    else {
+    else
+    {
         Serial.println("Error starting bluetooth serial");
         return false;
     }
@@ -25,7 +28,6 @@ bool Bluetooth::inputAvailable()
 void Bluetooth::handleCommands()
 {
     char cmd = bluetoothSerial.read();
-
     Serial.println("BT-Command: " + cmd);
 
     if (REQUEST_TAG_DEVICE_INFO == cmd)
@@ -77,7 +79,8 @@ void Bluetooth::writeFileList()
 {
     FileList list = storage.getFileList();
 
-    for(int i = 0; i < list.size; i++) {
+    for (int i = 0; i < list.size; i++)
+    {
         writeFileListEntry(list.entries[i].name, list.entries[i].size);
     }
     free(list.entries);
@@ -171,7 +174,8 @@ void Bluetooth::sendFile(String filename)
         bluetoothSerial.write(RESPONSE_TAG_GET_FILE_END);
         file.close();
     }
-    else {
+    else
+    {
         bluetoothSerial.write(RESPONSE_TAG_ERROR);
     }
 }

@@ -1,5 +1,5 @@
 
-#ifndef BIKETELEMETRY_H_   /* Include guard */
+#ifndef BIKETELEMETRY_H_ /* Include guard */
 #define BIKETELEMETRY_H_
 
 #include <TinyGPSPlus.h>
@@ -28,22 +28,24 @@ struct Telemetry
     double zg;
 };
 
-class BikeTelemetry {
-    public:
-        BikeTelemetry();
-        bool begin();
-        bool isAvailable();
-        Telemetry getTelemetry();
-    private:
-        static const int GPS_RX_PIN = 16, GPS_TX_PIN = 17;
-        static const int GPS_BAUD = 9600;
-        TinyGPSPlus gps;
-        double startLat;
-        double startLng;
-        bool startCalculateDistance;
-        SoftwareSerial gpsSerial;
+class BikeTelemetry
+{
+public:
+    BikeTelemetry();
+    bool begin();
+    bool isAvailable();
+    Telemetry getTelemetry();
 
-        //void prepareData
+private:
+    static const int GPS_RX_PIN = 16, GPS_TX_PIN = 17;
+    static const int GPS_BAUD = 9600;
+    TinyGPSPlus gps;
+    double startLat;
+    double startLng;
+    bool startCalculateDistance;
+    SoftwareSerial gpsSerial;
+
+    //void prepareData
 };
 
 #endif // BIKETELEMETRY_H_

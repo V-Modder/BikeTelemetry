@@ -7,11 +7,13 @@ BikeTelemetry bikeTelemetry;
 Bluetooth bluetooth;
 Storage storage;
 
-String getApplicationName() {
+String getApplicationName()
+{
   return "BikeTelemetry V" + String(VERSION);
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   Serial.print("Setup GPS START...");
   bikeTelemetry.begin();
@@ -19,14 +21,16 @@ void setup() {
   Serial.println("End");
 
   Serial.print("Setup Storage START...");
-  if (!storage.begin()) {
+  if (!storage.begin())
+  {
     while (true);
   }
   Serial.println("END");
 
   Serial.print("Setup Bluetooth START...");
-  if(bluetooth.begin(getApplicationName(), storage)) {
-    while(true);
+  if (!bluetooth.begin(getApplicationName(), storage))
+  {
+    while (true);
   }
   Serial.println("END");
 
@@ -34,20 +38,25 @@ void setup() {
   Serial.println();
 }
 
-void loop() {
-  if (bikeTelemetry.isAvailable()) {
-    Telemetry telemetry = bikeTelemetry.getTelemetry();  
+void loop()
+{
+  if (bikeTelemetry.isAvailable())
+  {
+    Telemetry telemetry = bikeTelemetry.getTelemetry();
     storage.writeToSd(telemetry);
-    if(bluetooth.isSendTelemetry()) {
+    if (bluetooth.isSendTelemetry())
+    {
       bluetooth.writeTelemetry(telemetry);
     }
   }
-  else {
+  else
+  {
     delay(5000);
     Serial.println("wait position");
   }
-  
-  if (bluetooth.inputAvailable()) {
+
+  if (bluetooth.inputAvailable())
+  {
     bluetooth.handleCommands();
   }
 }
