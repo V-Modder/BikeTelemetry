@@ -12,20 +12,23 @@ String getApplicationName() {
 }
 
 void setup() {
-  // GPS Inizialize
   Serial.begin(115200);
-  Serial.println("Setup GPS START ...");
+  Serial.print("Setup GPS START...");
   bikeTelemetry.begin();
   delay(3000);
-  Serial.println("Setup GPS End");
+  Serial.println("End");
 
+  Serial.print("Setup Storage START...");
   if (!storage.begin()) {
     while (true);
   }
+  Serial.println("END");
 
+  Serial.print("Setup Bluetooth START...");
   if(bluetooth.begin(getApplicationName(), storage)) {
     while(true);
   }
+  Serial.println("END");
 
   Serial.print(getApplicationName());
   Serial.println();
