@@ -214,7 +214,8 @@ public class BluetoothService extends Service {
     private TelemetryFileListEntry receiveFileListEntry(InputStream inputStream) throws IOException {
         long size = StreamHelper.readInt(inputStream);
         String filename = StreamHelper.readString(inputStream, 25);
-
+        inputStream.available()
+        inputStream.read()
         return new TelemetryFileListEntry(filename, size);
     }
 

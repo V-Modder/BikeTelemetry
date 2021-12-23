@@ -7,7 +7,7 @@
 
 struct FileListEntry
 {
-    String name;
+    char* name;
     long size;
 };
 

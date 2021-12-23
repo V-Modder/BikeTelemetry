@@ -122,16 +122,16 @@ void Bluetooth::writeTelemetry(Telemetry &telemetry)
 
 void Bluetooth::writeInt(int value)
 {
-    bluetoothSerial.write((byte)value);
-    bluetoothSerial.write((byte)value >> 8);
-    bluetoothSerial.write((byte)value >> 16);
     bluetoothSerial.write((byte)value >> 24);
+    bluetoothSerial.write((byte)value >> 16);
+    bluetoothSerial.write((byte)value >> 8);
+    bluetoothSerial.write((byte)value);
 }
 
 void Bluetooth::writeShort(short value)
 {
-    bluetoothSerial.write((byte)value);
     bluetoothSerial.write((byte)value >> 8);
+    bluetoothSerial.write((byte)value);
 }
 
 void Bluetooth::writeDouble(double value)
@@ -148,12 +148,12 @@ void Bluetooth::writeDouble(double value)
 
 void Bluetooth::writeString(String str, int size)
 {
+    Serial.print("str: ");
+    Serial.println(str);
     for (int i = 0; i < size; i++)
     {
         if (i < str.length())
         { 
-            Serial.print("Writing char: ");
-            Serial.println(str[i]);
             bluetoothSerial.write(str[i]);
         }
         else

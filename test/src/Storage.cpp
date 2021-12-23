@@ -148,10 +148,7 @@ FileList Storage::getFileList()
     File dir = SD.open(FILE_PATH, FILE_READ);
     FileList list;
     list.size = getFileCount(dir);
-    Serial.print("FileCount: ");
-    Serial.println(list.size);
     list.entries = (FileListEntry *)malloc(sizeof(FileListEntry) * list.size);
-    Serial.print("Malloc done");
     File entry = dir.openNextFile(FILE_READ);
     int i = 0;
     while (entry)
@@ -161,9 +158,8 @@ FileList Storage::getFileList()
             String name = String(entry.name());
             if (name.endsWith(".csv") && name != currentDataFile.name())
             {
-                list.entries[i].name = name;
+                list.entries[i].name = (char *)name.substring(name.lastIndexOf('/') + 1).c_str(); //entry.name();
                 list.entries[i].size = entry.size();
-                Serial.println("File: " + list.entries[i].name);
                 i++;
             }
         }
@@ -175,8 +171,9 @@ FileList Storage::getFileList()
     return list;
 }
 
-int Storage::getFileCount(File& dir) {
-    //File dir = SD.open(FILE_PATH, FILE_READ);
+int Storage::getFileCount(File &dire)
+{
+    File dir = SD.open(FILE_PATH, FILE_READ);
     File entry = dir.openNextFile(FILE_READ);
 
     int fileCount = 0;

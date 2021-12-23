@@ -32,6 +32,7 @@ public class RemoteFileActivity extends AppCompatActivity {
     private boolean bluetoothServiceBound;
     private ServiceConnection bluetoothServiceConnection;
     private List<TelemetryFileListEntry> fileList;
+    private RecyclerAdapter recyclerAdapter;
 
     public RemoteFileActivity() {
         bluetoothServiceInput = null;
@@ -41,6 +42,7 @@ public class RemoteFileActivity extends AppCompatActivity {
                 super.handleMessage(msg);
                 if(msg.what == BluetoothService.RESPONSE_TAG_GET_FILE_LIST_ENTRY) {
                     fileList.add((TelemetryFileListEntry) msg.obj);
+                    recyclerAdapter.notifyItemInserted(fileList.size());
                 }
             }
         });
@@ -68,10 +70,10 @@ public class RemoteFileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_remote_file);
 
         fileList = new ArrayList<>();
-
+        recyclerAdapter = new RecyclerAdapter(fileList);
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new RecyclerAdapter(fileList));
+        recyclerView.setAdapter(recyclerAdapter);
         registerForContextMenu(recyclerView);
         //getFiles();
     }
@@ -135,6 +137,15 @@ public class RemoteFileActivity extends AppCompatActivity {
     }
 
     private void copyTelemetryFile(TelemetryFileListEntry telemetryFileListEntry) {
+        Message msg = new Message();
+        msg.what = BluetoothService.REQUEST_TAG_GET_FILE;
+        msg.obj = telemetryFileListEntry.getFilename();
+        msg.replyTo = bluetoothServiceReply;
+        try {
+            bluetoothServiceInput.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     private void deleteTelemetryFile(TelemetryFileListEntry telemetryFileListEntry) {

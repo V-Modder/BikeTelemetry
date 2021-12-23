@@ -32,14 +32,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<MyViewHolder> {
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         TelemetryFileListEntry entry = values.get(position);
         holder.getFilenameView().setText(entry.getFilename());
-        holder.getFilenameView().setText(FileUtils.byteCountToDisplaySize(entry.getSize()));
+        holder.getSizeView().setText(FileUtils.byteCountToDisplaySize(entry.getSize()));
 
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                setSelectedIndex(holder.getLayoutPosition());
-                return false;
-            }
+        holder.itemView.setOnLongClickListener(v -> {
+            setSelectedIndex(holder.getLayoutPosition());
+            return false;
         });
     }
 
