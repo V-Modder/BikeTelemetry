@@ -2,7 +2,7 @@ FILENAME_BUILDNO = 'versioning'
 FILENAME_INCLUDE_PATH = 'include'
 FILENAME_VERSION_H = FILENAME_INCLUDE_PATH + '/version.h'
 
-version = 'v0.0.1'
+version = '0.0.1'
 build_no = 0
 
 try:

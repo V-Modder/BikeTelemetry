@@ -145,8 +145,39 @@ void Storage::removeFile(String filename)
 
 FileList Storage::getFileList()
 {
-    File dir = SD.open(FILE_PATH);
-    File entry = dir.openNextFile();
+    File dir = SD.open(FILE_PATH, FILE_READ);
+    FileList list;
+    list.size = getFileCount(dir);
+    Serial.print("FileCount: ");
+    Serial.println(list.size);
+    list.entries = (FileListEntry *)malloc(sizeof(FileListEntry) * list.size);
+    Serial.print("Malloc done");
+    File entry = dir.openNextFile(FILE_READ);
+    int i = 0;
+    while (entry)
+    {
+        if (!entry.isDirectory())
+        {
+            String name = String(entry.name());
+            if (name.endsWith(".csv") && name != currentDataFile.name())
+            {
+                list.entries[i].name = name;
+                list.entries[i].size = entry.size();
+                Serial.println("File: " + list.entries[i].name);
+                i++;
+            }
+        }
+        entry.close();
+        entry = dir.openNextFile(FILE_READ);
+    }
+    dir.close();
+
+    return list;
+}
+
+int Storage::getFileCount(File& dir) {
+    //File dir = SD.open(FILE_PATH, FILE_READ);
+    File entry = dir.openNextFile(FILE_READ);
 
     int fileCount = 0;
     while (entry)
@@ -160,30 +191,11 @@ FileList Storage::getFileList()
             }
         }
         entry.close();
-        entry = dir.openNextFile();
+        entry = dir.openNextFile(FILE_READ);
     }
+    dir.close();
 
-    FileList list;
-    list.size = fileCount;
-    list.entries = (FileListEntry *)malloc(sizeof(FileListEntry) * list.size);
-    int i = 0;
-    while (entry)
-    {
-        if (!entry.isDirectory())
-        {
-            String name = String(entry.name());
-            if (name.endsWith(".csv") && name != currentDataFile.name())
-            {
-                list.entries[i].name = name;
-                list.entries[i].size = entry.size();
-                i++;
-            }
-        }
-        entry.close();
-        entry = dir.openNextFile();
-    }
-
-    return list;
+    return fileCount;
 }
 
 File Storage::getFile(String name)

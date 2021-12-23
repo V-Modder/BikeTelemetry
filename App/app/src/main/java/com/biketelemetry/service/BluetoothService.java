@@ -73,7 +73,7 @@ public class BluetoothService extends Service {
                     BluetoothService.this.requestDeviceInfo();
                     break;
                 case REQUEST_TAG_GET_FILE_LIST:
-                    Toast.makeText(applicationContext, "REQUEST_TAG_GET_FILE_LIST!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(applicationContext, "REQUEST_TAG_GET_FILE_LIST!", Toast.LENGTH_SHORT).show();
                     replyMessenger = msg.replyTo;
                     BluetoothService.this.requestFileList();
                     break;

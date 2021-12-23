@@ -34,6 +34,7 @@ private:
     String getNewFileName();
     String split(String data, char separator, int index);
     String formatLeadingZero(int number, int digits);
+    int getFileCount(File& dir);
 };
 
 #endif

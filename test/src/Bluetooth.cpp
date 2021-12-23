@@ -28,7 +28,8 @@ bool Bluetooth::inputAvailable()
 void Bluetooth::handleCommands()
 {
     char cmd = bluetoothSerial.read();
-    Serial.println("BT-Command: " + cmd);
+    Serial.print("BT-Command: ");
+     Serial.println((int)cmd);
 
     if (REQUEST_TAG_DEVICE_INFO == cmd)
     {
@@ -81,11 +82,18 @@ void Bluetooth::writeFileList()
 
     for (int i = 0; i < list.size; i++)
     {
-        writeFileListEntry(list.entries[i].name, list.entries[i].size);
+        writeFileListEntry(list.entries[i]);
     }
     free(list.entries);
 
     bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY_END);
+}
+
+void Bluetooth::writeFileListEntry(FileListEntry& entry)
+{
+    bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY);
+    writeInt(entry.size);
+    writeString(entry.name, 25);
 }
 
 void Bluetooth::writeTelemetry(Telemetry &telemetry)
@@ -110,13 +118,6 @@ void Bluetooth::writeTelemetry(Telemetry &telemetry)
     writeDouble(telemetry.xg);
     writeDouble(telemetry.yg);
     writeDouble(telemetry.zg);
-}
-
-void Bluetooth::writeFileListEntry(String name, unsigned long size)
-{
-    bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY);
-    writeInt(size);
-    writeString(name, 25);
 }
 
 void Bluetooth::writeInt(int value)
@@ -150,7 +151,9 @@ void Bluetooth::writeString(String str, int size)
     for (int i = 0; i < size; i++)
     {
         if (i < str.length())
-        {
+        { 
+            Serial.print("Writing char: ");
+            Serial.println(str[i]);
             bluetoothSerial.write(str[i]);
         }
         else

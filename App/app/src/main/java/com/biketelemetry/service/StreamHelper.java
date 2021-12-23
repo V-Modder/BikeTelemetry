@@ -3,12 +3,14 @@ package com.biketelemetry.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class StreamHelper {
     public static String readString(InputStream stream, int length) throws IOException {
         StringBuilder sb = new StringBuilder();
         int ch;
-        while ((ch = stream.read()) != -1 && sb.length() < length) {
+        while ((ch = stream.read()) != -1 && ch != 0 && sb.length() < length) {
+            System.out.println("Char: " + ch);
             sb.append((char) ch);
         }
 
@@ -30,6 +32,6 @@ public class StreamHelper {
     private static ByteBuffer createBuffer(InputStream stream, int length) throws IOException {
         byte[] dummy = new byte[length];
         stream.read(dummy);
-        return ByteBuffer.wrap(dummy);
+        return ByteBuffer.wrap(dummy).order(ByteOrder.LITTLE_ENDIAN);
     }
 }
