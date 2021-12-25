@@ -178,6 +178,11 @@ public class BluetoothService extends Service {
             try {
                 InputStream inputStream = socket.getInputStream();
                 while (inputStream.available() > 0) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     int messageType = inputStream.read();
                     switch (messageType) {
                         case RESPONSE_TAG_DEVICE_INFO:
@@ -214,8 +219,6 @@ public class BluetoothService extends Service {
     private TelemetryFileListEntry receiveFileListEntry(InputStream inputStream) throws IOException {
         long size = StreamHelper.readInt(inputStream);
         String filename = StreamHelper.readString(inputStream, 25);
-        inputStream.available()
-        inputStream.read()
         return new TelemetryFileListEntry(filename, size);
     }
 
