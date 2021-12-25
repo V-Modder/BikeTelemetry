@@ -15,10 +15,9 @@ String getApplicationName()
 void setup()
 {
   Serial.begin(115200);
-  Serial.print("Setup GPS START...");
+
   bikeTelemetry.begin();
   delay(3000);
-  Serial.println("End");
 
   Serial.print("Setup Storage START...");
   if (!storage.begin())
