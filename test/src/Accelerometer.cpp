@@ -60,7 +60,7 @@ Angles Accelerometer::getRawValues() {
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x3B);
   Wire.endTransmission(false);
-  Wire.requestFrom(MPU_addr, 14, true);
+  Wire.requestFrom(MPU_addr, 14, 1);
   
   int acX = Wire.read() << 8 | Wire.read();
   int acY = Wire.read() << 8 | Wire.read();

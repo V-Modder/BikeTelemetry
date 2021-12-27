@@ -5,7 +5,7 @@ Bluetooth::Bluetooth()
     sendTelemetry = false;
 }
 
-/* bool Bluetooth::begin(String applicatoinName, Storage& storage, ITelemetryStatusReportable& bikeTelemetry)
+bool Bluetooth::begin(String applicationName, Storage& storage, ITelemetryStatusReportable& bikeTelemetry)
 {
     this->applicationName = applicationName;
     this->storage = storage;
@@ -20,7 +20,7 @@ Bluetooth::Bluetooth()
         return false;
     }
 }
- */
+
 bool Bluetooth::inputAvailable()
 {
     return bluetoothSerial.available();

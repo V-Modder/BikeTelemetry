@@ -4,11 +4,8 @@
 
 #include <TinyGPSPlus.h>
 #include <SoftwareSerial.h>
-<<<<<<< HEAD
 #include <BikeTelemetryStatus.h>
-=======
 #include <Accelerometer.h>
->>>>>>> 42f077495f31ddb4f2ca8d3f126768bce295ba14
 
 struct Telemetry
 {
@@ -40,7 +37,6 @@ public:
     bool begin();
     bool isAvailable();
     Telemetry getTelemetry();
-    BikeTelemetryStatus getStatus();
 
 private:
     static const int GPS_RX_PIN = 16, GPS_TX_PIN = 17;

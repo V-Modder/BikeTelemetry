@@ -73,7 +73,3 @@ Telemetry BikeTelemetry::getTelemetry()
 
     return telemetry;
 }
-
-BikeTelemetryStatus BikeTelemetry::getStatus() {
-    return status;
-}
