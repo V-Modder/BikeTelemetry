@@ -16,7 +16,7 @@ class Bluetooth
 {
 public:
     Bluetooth();
-    bool begin(String applicationName, Storage &storage);
+    bool begin(String applicationName, Storage& storage, BikeTelemetry& bikeTelemetry);
     bool inputAvailable();
     void handleCommands();
     bool isSendTelemetry();
@@ -41,6 +41,7 @@ private:
     BluetoothSerial bluetoothSerial;
     String applicationName;
     Storage storage;
+    ITelemetryStatusReportable& bikeTelemetry;
 
     String readString(int length);
     void writeFileList();

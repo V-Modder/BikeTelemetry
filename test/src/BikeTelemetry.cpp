@@ -1,12 +1,14 @@
 #include "BikeTelemetry.h"
 
 #include <SoftwareSerial.h>
+#include <BikeTelemetryStatus.h>
 
 BikeTelemetry::BikeTelemetry()
 {
     startLat = 0.0;
     startLng = 0.0;
     startCalculateDistance = false;
+    status = NOT_STARTED;
 }
 
 bool BikeTelemetry::begin()
@@ -66,4 +68,8 @@ Telemetry BikeTelemetry::getTelemetry()
     telemetry.zg = 0.0;
 
     return telemetry;
+}
+
+BikeTelemetryStatus BikeTelemetry::getStatus() {
+    return status;
 }

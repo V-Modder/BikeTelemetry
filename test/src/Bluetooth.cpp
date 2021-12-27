@@ -5,10 +5,11 @@ Bluetooth::Bluetooth()
     sendTelemetry = false;
 }
 
-bool Bluetooth::begin(String applicatoinName, Storage &storage)
+/* bool Bluetooth::begin(String applicatoinName, Storage& storage, ITelemetryStatusReportable& bikeTelemetry)
 {
     this->applicationName = applicationName;
     this->storage = storage;
+    this->bikeTelemetry = bikeTelemetry;
     if (bluetoothSerial.begin("Bike-Telemetry"))
     {
         return true;
@@ -19,7 +20,7 @@ bool Bluetooth::begin(String applicatoinName, Storage &storage)
         return false;
     }
 }
-
+ */
 bool Bluetooth::inputAvailable()
 {
     return bluetoothSerial.available();
@@ -29,7 +30,7 @@ void Bluetooth::handleCommands()
 {
     char cmd = bluetoothSerial.read();
     Serial.print("BT-Command: ");
-     Serial.println((int)cmd);
+    Serial.println((int)cmd);
 
     if (REQUEST_TAG_DEVICE_INFO == cmd)
     {

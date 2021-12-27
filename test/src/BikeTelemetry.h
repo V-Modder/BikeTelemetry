@@ -4,6 +4,7 @@
 
 #include <TinyGPSPlus.h>
 #include <SoftwareSerial.h>
+#include <BikeTelemetryStatus.h>
 
 struct Telemetry
 {
@@ -28,13 +29,14 @@ struct Telemetry
     double zg;
 };
 
-class BikeTelemetry
+class BikeTelemetry : public ITelemetryStatusReportable
 {
 public:
     BikeTelemetry();
     bool begin();
     bool isAvailable();
     Telemetry getTelemetry();
+    BikeTelemetryStatus getStatus();
 
 private:
     static const int GPS_RX_PIN = 16, GPS_TX_PIN = 17;
@@ -44,8 +46,7 @@ private:
     double startLng;
     bool startCalculateDistance;
     SoftwareSerial gpsSerial;
-
-    //void prepareData
+    BikeTelemetryStatus status;
 };
 
 #endif // BIKETELEMETRY_H_
