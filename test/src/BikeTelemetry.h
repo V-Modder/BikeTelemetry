@@ -4,7 +4,11 @@
 
 #include <TinyGPSPlus.h>
 #include <SoftwareSerial.h>
+<<<<<<< HEAD
 #include <BikeTelemetryStatus.h>
+=======
+#include <Accelerometer.h>
+>>>>>>> 42f077495f31ddb4f2ca8d3f126768bce295ba14
 
 struct Telemetry
 {
@@ -47,6 +51,7 @@ private:
     bool startCalculateDistance;
     SoftwareSerial gpsSerial;
     BikeTelemetryStatus status;
+    Accelerometer accelerometer;
 };
 
 #endif // BIKETELEMETRY_H_

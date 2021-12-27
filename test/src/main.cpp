@@ -14,28 +14,27 @@ String getApplicationName()
 
 void setup()
 {
-    Serial.begin(115200);
-    Serial.print("Setup GPS START...");
-    bikeTelemetry.begin();
-    delay(3000);
-    Serial.println("End");
+  Serial.begin(115200);
 
-    Serial.print("Setup Storage START...");
-    if (!storage.begin())
-    {
-        while (true);
-    }
-    Serial.println("END");
+  bikeTelemetry.begin();
+  delay(3000);
 
-    Serial.print("Setup Bluetooth START...");
-    if (!bluetooth.begin(getApplicationName(), storage, bikeTelemetry))
-    {
-        while (true);
-    }
-    Serial.println("END");
+  Serial.print("Setup Storage START...");
+  if (!storage.begin())
+  {
+    while (true);
+  }
+  Serial.println("END");
 
-    Serial.print(getApplicationName());
-    Serial.println();
+  Serial.print("Setup Bluetooth START...");
+  if (!bluetooth.begin(getApplicationName(), storage, bikeTelemetry))
+  {
+    while (true);
+  }
+  Serial.println("END");
+
+  Serial.print(getApplicationName());
+  Serial.println();
 }
 
 void loop()

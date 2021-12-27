@@ -13,8 +13,10 @@ BikeTelemetry::BikeTelemetry()
 
 bool BikeTelemetry::begin()
 {
+    Serial.print("Setup GPS START...");
     gpsSerial.begin(GPS_BAUD, SWSERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN, false);
-    return true;
+    Serial.println("End");
+    return accelerometer.begin();
 }
 
 bool BikeTelemetry::isAvailable()
@@ -61,11 +63,13 @@ Telemetry BikeTelemetry::getTelemetry()
     telemetry.satellites = gps.satellites.value();
     telemetry.hdop = gps.hdop.value();
 
+    Angles angles = accelerometer.getAngles();
+
     telemetry.roll = 0;
     telemetry.pitch = 0;
-    telemetry.xg = 0.0;
-    telemetry.yg = 0.0;
-    telemetry.zg = 0.0;
+    telemetry.xg = angles.X;
+    telemetry.yg = angles.Y;
+    telemetry.zg = angles.Z;
 
     return telemetry;
 }
