@@ -2,13 +2,31 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="30pt"
     tools:context=".gui.StatusFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:id="@+id/txt_static_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/txt_static_status" />
+
+    <TextView
+        android:id="@+id/txt_device_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15pt"
+        android:text="@string/txt_device_not_found"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/txt_status"
+        android:layout_width="206dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="70pt"
+        android:layout_marginTop="8pt"
+        android:text="@string/txt_status_error"
+        android:textAlignment="viewEnd"
+        android:textSize="24sp" />
 
 </FrameLayout>
