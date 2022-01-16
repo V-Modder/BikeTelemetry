@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
@@ -36,10 +37,9 @@ public class RemoteFileActivity extends AppCompatActivity {
 
     public RemoteFileActivity() {
         bluetoothServiceInput = null;
-        bluetoothServiceReply = new Messenger(new Handler() {
+        bluetoothServiceReply = new Messenger(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
-                super.handleMessage(msg);
                 if(msg.what == BluetoothService.RESPONSE_TAG_GET_FILE_LIST_ENTRY) {
                     fileList.add((TelemetryFileListEntry) msg.obj);
                     recyclerAdapter.notifyItemInserted(fileList.size());
