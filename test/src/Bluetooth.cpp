@@ -5,7 +5,7 @@ Bluetooth::Bluetooth()
     sendTelemetry = false;
 }
 
-bool Bluetooth::begin(String applicationName, Storage& storage, ITelemetryStatusReportable& bikeTelemetry)
+bool Bluetooth::begin(String applicationName, Storage &storage, ITelemetryStatusReportable &bikeTelemetry)
 {
     this->applicationName = applicationName;
     this->storage = storage;
@@ -57,6 +57,11 @@ void Bluetooth::handleCommands()
     {
         sendTelemetry = bluetoothSerial.read() != 0;
     }
+    else if (REQUEST_TAG_GET_STATUS == cmd)
+    {
+        Serial.println("BT-Sending status");
+        sendStatus();
+    }
 }
 
 bool Bluetooth::isSendTelemetry()
@@ -90,7 +95,7 @@ void Bluetooth::writeFileList()
     bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY_END);
 }
 
-void Bluetooth::writeFileListEntry(FileListEntry& entry)
+void Bluetooth::writeFileListEntry(FileListEntry &entry)
 {
     bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY);
     writeInt(entry.size);
@@ -154,7 +159,7 @@ void Bluetooth::writeString(String str, int size)
     for (int i = 0; i < size; i++)
     {
         if (i < str.length())
-        { 
+        {
             bluetoothSerial.write(str[i]);
         }
         else
@@ -187,4 +192,10 @@ void Bluetooth::sendFile(String filename)
 void Bluetooth::removeFile(String filename)
 {
     storage.removeFile(filename);
+}
+
+void Bluetooth::sendStatus()
+{
+    bluetoothSerial.write(RESPONSE_TAG_GET_STATUS);
+    bluetoothSerial.write(bikeTelemetry.getStatus());
 }

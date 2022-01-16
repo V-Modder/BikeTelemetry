@@ -45,6 +45,10 @@ Telemetry BikeTelemetry::getTelemetry()
             startLat = telemetry.latitude;
             startLng = telemetry.longitude;
         }
+        status = RUNNING;
+    }
+    else {
+        status = NO_SIGNAL;
     }
 
     if (gps.date.isValid())
