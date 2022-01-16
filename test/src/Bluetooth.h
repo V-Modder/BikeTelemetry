@@ -50,7 +50,7 @@ private:
     void writeInt(int value);
     void writeShort(short value);
     void writeDouble(double value);
-    void writeString(String str, int size);
+    void writeString(String str);
     void sendFile(String filename);
     void removeFile(String filename);
     void sendStatus();

@@ -34,7 +34,7 @@ void Bluetooth::handleCommands()
 
     if (REQUEST_TAG_DEVICE_INFO == cmd)
     {
-        writeString(applicationName, 25);
+        writeString(applicationName);
     }
     else if (REQUEST_TAG_GET_FILE_LIST == cmd)
     {
@@ -99,7 +99,7 @@ void Bluetooth::writeFileListEntry(FileListEntry &entry)
 {
     bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY);
     writeInt(entry.size);
-    writeString(entry.name, 25);
+    writeString(entry.name);
 }
 
 void Bluetooth::writeTelemetry(Telemetry &telemetry)
@@ -152,22 +152,15 @@ void Bluetooth::writeDouble(double value)
     }
 }
 
-void Bluetooth::writeString(String str, int size)
+void Bluetooth::writeString(String str)
 {
     Serial.print("str: ");
     Serial.println(str);
-    for (int i = 0; i < size; i++)
+    bluetoothSerial.write(str.length());
+    for (int i = 0; i < str.length(); i++)
     {
-        if (i < str.length())
-        {
-            bluetoothSerial.write(str[i]);
-        }
-        else
-        {
-            break;
-        }
+        bluetoothSerial.write(str[i]);
     }
-    bluetoothSerial.write('\0');
 }
 
 void Bluetooth::sendFile(String filename)
@@ -176,6 +169,7 @@ void Bluetooth::sendFile(String filename)
     if (file)
     {
         bluetoothSerial.write(RESPONSE_TAG_GET_FILE);
+        writeInt(file.size());
         while (file.available())
         {
             bluetoothSerial.write(file.read());

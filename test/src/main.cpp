@@ -23,16 +23,14 @@ void setup()
     Serial.print("Setup Storage START...");
     if (!storage.begin())
     {
-        while (true)
-            ;
+        while (true);
     }
     Serial.println("END");
 
     Serial.print("Setup Bluetooth START...");
     if (!bluetooth.begin(getApplicationName(), storage, bikeTelemetry))
     {
-        while (true)
-            ;
+        while (true);
     }
     Serial.println("END");
 

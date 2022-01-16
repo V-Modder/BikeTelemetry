@@ -186,7 +186,7 @@ public class BluetoothService extends Service {
                     int messageType = inputStream.read();
                     switch (messageType) {
                         case RESPONSE_TAG_DEVICE_INFO:
-                            handleData(messageType, receiveDeviceinfo(inputStream));
+                            handleData(messageType, receiveDeviceInfo(inputStream));
                             break;
                         case RESPONSE_TAG_GET_FILE_LIST_ENTRY:
                             handleData(messageType, receiveFileListEntry(inputStream));
@@ -211,14 +211,14 @@ public class BluetoothService extends Service {
         }
     }
 
-    private String receiveDeviceinfo(InputStream inputStream) throws IOException {
-        return StreamHelper.readString(inputStream, 25);
+    private String receiveDeviceInfo(InputStream inputStream) throws IOException {
+        return StreamHelper.readString(inputStream);
     }
 
     @NonNull
     private TelemetryFileListEntry receiveFileListEntry(InputStream inputStream) throws IOException {
         long size = StreamHelper.readInt(inputStream);
-        String filename = StreamHelper.readString(inputStream, 25);
+        String filename = StreamHelper.readString(inputStream);
         return new TelemetryFileListEntry(filename, size);
     }
 
@@ -226,10 +226,13 @@ public class BluetoothService extends Service {
     private File receiveFile(InputStream inputStream) throws IOException {
         File tmpFile = File.createTempFile("download", ".csv", getCacheDir());
         try(FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
-            byte[] dummy = new byte[500];
-            int ch;
-            while ((ch = inputStream.read(dummy)) != -1) {
-                fileOutputStream.write(dummy, 0, ch);
+            int remainingBytes = StreamHelper.readInt(inputStream);
+            while (remainingBytes > 0) {
+                int bytesToRead = remainingBytes < 500 ? remainingBytes : 500;
+                byte[] dummy = new byte[bytesToRead];
+                inputStream.read(dummy, 0, dummy.length);
+                fileOutputStream.write(dummy);
+                remainingBytes -= bytesToRead;
             }
         }
 

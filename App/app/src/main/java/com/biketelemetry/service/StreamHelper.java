@@ -5,8 +5,9 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 public class StreamHelper {
-    public static String readString(InputStream stream, int length) throws IOException {
+    public static String readString(InputStream stream) throws IOException {
         StringBuilder sb = new StringBuilder();
+        int length = stream.read();
         int ch;//stream.available()
         while ((ch = stream.read()) != -1 && ch != 0 && sb.length() < length) {
             System.out.println("Char: " + ch);
