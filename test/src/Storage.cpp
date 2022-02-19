@@ -115,7 +115,7 @@ String Storage::formatLeadingZero(int number, int digits)
 
 void Storage::writeToSd(Telemetry &telemetry)
 {
-    String line = String(telemetry.latitude, 6);
+    /*String line = String(telemetry.latitude, 6);
     line += "|" + String(telemetry.longitude, 6);
     line += "|" + String(telemetry.altitude, 6);
     line += "|" + String(telemetry.distance, 1);
@@ -129,8 +129,9 @@ void Storage::writeToSd(Telemetry &telemetry)
     line += "|" + String(telemetry.millisecond);
     line += "|" + String(telemetry.satellites);
     line += "|" + String(telemetry.hdop);
+    currentDataFile.println(line);*/
 
-    currentDataFile.println(line);
+    currentDataFile.write((const uint8_t *)&telemetry, sizeof(telemetry));
     currentDataFile.flush();
 }
 
