@@ -128,15 +128,15 @@ void Bluetooth::writeTelemetry(Telemetry &telemetry)
 
 void Bluetooth::writeInt(int value)
 {
-    bluetoothSerial.write((byte)value >> 24);
-    bluetoothSerial.write((byte)value >> 16);
-    bluetoothSerial.write((byte)value >> 8);
+    bluetoothSerial.write((byte)(value >> 24));
+    bluetoothSerial.write((byte)(value >> 16));
+    bluetoothSerial.write((byte)(value >> 8));
     bluetoothSerial.write((byte)value);
 }
 
 void Bluetooth::writeShort(short value)
 {
-    bluetoothSerial.write((byte)value >> 8);
+    bluetoothSerial.write((byte)(value >> 8));
     bluetoothSerial.write((byte)value);
 }
 

@@ -10,11 +10,6 @@ import android.view.ViewGroup;
 
 import com.biketelemetry.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link StatusFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class StatusFragment extends Fragment {
 
     private StatusFragment() {
@@ -31,6 +26,7 @@ public class StatusFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
         }
+
     }
 
     @Override
@@ -40,7 +36,7 @@ public class StatusFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                             Bund le savedInstanceState) {
         return inflater.inflate(R.layout.fragment_status, container, false);
     }
 }
