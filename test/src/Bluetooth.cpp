@@ -105,6 +105,15 @@ void Bluetooth::writeFileListEntry(FileListEntry &entry)
 void Bluetooth::writeTelemetry(Telemetry &telemetry)
 {
     bluetoothSerial.write(RESPONSE_TAG_TELEMETRY);
+    bluetoothSerial.write((const uint8_t *)&telemetry, sizeof(telemetry));
+
+    /*
+    uint8_t *ptr = (uint8_t *)&telemetry;
+    for (unsigned int i = 0; i < sizeof(Telemetry); i++)
+    {
+        bluetoothSerial.write(*ptr++);
+    }
+    
     writeDouble(telemetry.latitude);
     writeDouble(telemetry.longitude);
     writeDouble(telemetry.altitude);
@@ -123,7 +132,7 @@ void Bluetooth::writeTelemetry(Telemetry &telemetry)
     writeInt(telemetry.pitch);
     writeDouble(telemetry.xg);
     writeDouble(telemetry.yg);
-    writeDouble(telemetry.zg);
+    writeDouble(telemetry.zg); */
 }
 
 void Bluetooth::writeInt(int value)

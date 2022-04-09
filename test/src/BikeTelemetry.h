@@ -7,7 +7,7 @@
 #include <BikeTelemetryStatus.h>
 #include <Accelerometer.h>
 
-struct Telemetry
+struct __attribute__((packed)) Telemetry
 {
     double latitude;
     double longitude;
