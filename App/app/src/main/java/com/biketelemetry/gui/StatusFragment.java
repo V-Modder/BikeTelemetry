@@ -1,5 +1,6 @@
 package com.biketelemetry.gui;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -7,12 +8,17 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.os.Messenger;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.biketelemetry.R;
+import com.biketelemetry.data.TelemetryFileListEntry;
 import com.biketelemetry.service.BluetoothService;
 
 public class StatusFragment extends Fragment {
@@ -23,7 +29,32 @@ public class StatusFragment extends Fragment {
     private ServiceConnection bluetoothServiceConnection;
 
     private StatusFragment() {
-        // Required empty public constructor
+        bluetoothServiceInput = null;
+        bluetoothServiceReply = new Messenger(new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                if(msg.what == BluetoothService.RESPONSE_TAG_GET_FILE_LIST_ENTRY) {
+                    fileList.add((TelemetryFileListEntry) msg.obj);
+                    recyclerAdapter.notifyItemInserted(fileList.size());
+                }
+            }
+        });
+        bluetoothServiceBound = false;
+        bluetoothServiceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName className,
+                                           IBinder service) {
+                bluetoothServiceInput = new Messenger(service);
+                bluetoothServiceBound = true;
+                getFiles();
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName arg0) {
+                bluetoothServiceInput = null;
+                bluetoothServiceBound = false;
+            }
+        };
     }
 
     public static StatusFragment newInstance() {
@@ -47,7 +78,7 @@ public class StatusFragment extends Fragment {
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
 
         if (bluetoothServiceBound) {
@@ -63,7 +94,7 @@ public class StatusFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bund le savedInstanceState) {
+                             Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_status, container, false);
     }
 }
