@@ -40,6 +40,11 @@ const int CHIP_SELECT = 5;
 String FILE_PATH = "/test";
 File DATA_FILE;
 
+const int MPU_addr = 0x68;
+Angles calibration;
+const int minVal = 265;
+const int maxVal = 402;
+
 struct Telemetry {
   double latitude;
   double longitude;
@@ -55,11 +60,15 @@ struct Telemetry {
   short millisecond;
   char satellites;
   char hdop;
-  int roll;
-  int pitch;
   double xg;
   double yg;
   double zg;
+};
+
+struct Angles {
+   int X;
+   int Y;
+   int Z;
 };
 
 void setup() {
@@ -96,6 +105,28 @@ void setup() {
   Serial.print(getApplicationName());
   Serial.println(TinyGPSPlus::libraryVersion());
   Serial.println();
+
+  Angles cal = {0, 0, 0};
+  int calibrations = 1000;
+  for(int i = 0;i < calibrations; i++) {
+    Angles tmp = getRawValues();
+    cal.X += tmp.X;
+    cal.Y += tmp.Y;
+    cal.Z += tmp.Z;
+  }
+
+  cal.X /= calibrations;
+  cal.Y /= calibrations;
+  cal.Z /= calibrations;
+  int xAng = map(cal.X, minVal, maxVal, -90, 90);
+  int yAng = map(cal.Y, minVal, maxVal, -90, 90);
+  int zAng = map(cal.Z, minVal, maxVal, -90, 90);
+
+  int x = RAD_TO_DEG * (atan2(-yAng, -zAng) + PI);
+  int y = RAD_TO_DEG * (atan2(-xAng, -zAng) + PI);
+  int z = RAD_TO_DEG * (atan2(-yAng, -xAng) + PI);
+
+  calibration = {x, y, z};
 }
 
 String getApplicationName() {
@@ -153,7 +184,7 @@ Telemetry getTelemetry() {
     telemetry.latitude = gps.location.lat();
     telemetry.longitude = gps.location.lng();
 
-    if (Start_LAT == 0.000000  && Start_LNG == 0.000000) {
+    if (Start_LAT == 0.000000 && Start_LNG == 0.000000) {
       Start_CalculateDistance = true;
       Start_LAT = telemetry.latitude;
       Start_LNG = telemetry.longitude;
@@ -180,11 +211,10 @@ Telemetry getTelemetry() {
   telemetry.satellites = gps.satellites.value();
   telemetry.hdop = gps.hdop.value();
 
-  telemetry.roll = 0;
-  telemetry.pitch = 0;
-  telemetry.xg = 0.0;
-  telemetry.yg = 0.0;
-  telemetry.zg = 0.0;
+  Angles angles = getAngles();
+  telemetry.xg = angles.X;
+  telemetry.yg = angles.Y;
+  telemetry.zg = angles.Z;
   
   return telemetry;
 }
@@ -337,8 +367,6 @@ void writeTelemetry(Telemetry &telemetry) {
   writeShort(telemetry.millisecond);
   SerialBT.write(telemetry.satellites);
   SerialBT.write(telemetry.hdop);
-  writeInt(telemetry.roll);
-  writeInt(telemetry.pitch);
   writeDouble(telemetry.xg);
   writeDouble(telemetry.yg);
   writeDouble(telemetry.zg);
@@ -402,4 +430,40 @@ void removeFile(String filename) {
   if(SD.exists(filePath) && filename != DATA_FILE.name()) {
     SD.remove(filePath);
   }
+}
+
+Angles getAngles() {  
+  Angles raw_angles = getRawValues();
+  
+  int xAng = map(raw_angles.X, minVal, maxVal, -90, 90);
+  int yAng = map(raw_angles.Y, minVal, maxVal, -90, 90);
+  int zAng = map(raw_angles.Z, minVal, maxVal, -90, 90);
+
+  int x = RAD_TO_DEG * (atan2(-yAng, -zAng) + PI);
+  int y = RAD_TO_DEG * (atan2(-xAng, -zAng) + PI);
+  int z = RAD_TO_DEG * (atan2(-yAng, -xAng) + PI);
+
+  Angles angles = {x, y, z};
+  applyCalibration(angles);
+
+  return angles;
+}
+
+Angles getRawValues() {
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x3B);
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU_addr, 14, true);
+  
+  int acX = Wire.read() << 8 | Wire.read();
+  int acY = Wire.read() << 8 | Wire.read();
+  int acZ = Wire.read() << 8 | Wire.read();
+
+  return {acX, acY, acZ};
+}
+
+void applyCalibration(Angles angles) {
+  angles.X += calibration.X;
+  angles.Y += calibration.Y;
+  angles.Z += calibration.Z; 
 }
