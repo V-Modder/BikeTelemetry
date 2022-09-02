@@ -20,8 +20,7 @@ private:
     static const int MPU6050_RA_PWR_MGMT_1 = 0x6B; // Reset
     
     Angles calibration;
-
-    Angles getRawValues();
+    
     void applyCalibration(Angles& angles);
 };
 
