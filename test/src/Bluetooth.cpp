@@ -85,6 +85,7 @@ String Bluetooth::readString(int length)
 void Bluetooth::writeFileList()
 {
     FileList list = storage.getFileList();
+    writeInt(list.size);
 
     for (int i = 0; i < list.size; i++)
     {
@@ -92,7 +93,7 @@ void Bluetooth::writeFileList()
     }
     free(list.entries);
 
-    bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY_END);
+    //bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY_END);
 }
 
 void Bluetooth::writeFileListEntry(FileListEntry &entry)

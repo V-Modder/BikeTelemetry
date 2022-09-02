@@ -69,11 +69,8 @@ Telemetry BikeTelemetry::getTelemetry()
 
     Angles angles = accelerometer.getAngles();
 
-    telemetry.roll = 0;
-    telemetry.pitch = 0;
-    telemetry.xg = angles.X;
-    telemetry.yg = angles.Y;
-    telemetry.zg = angles.Z;
+    telemetry.roll = angles.Roll;
+    telemetry.pitch = angles.Pitch;
 
     return telemetry;
 }

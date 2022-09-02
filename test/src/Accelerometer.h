@@ -3,9 +3,8 @@
 
 struct Angles
 {
-    int X;
-    int Y;
-    int Z;
+    int Pitch;
+    int Roll;
 };
 
 class Accelerometer

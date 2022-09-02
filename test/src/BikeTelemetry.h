@@ -25,9 +25,6 @@ struct __attribute__((packed)) Telemetry
     char hdop;
     int roll;
     int pitch;
-    double xg;
-    double yg;
-    double zg;
 };
 
 class BikeTelemetry : public ITelemetryStatusReportable

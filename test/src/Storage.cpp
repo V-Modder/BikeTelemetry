@@ -1,6 +1,7 @@
 #include <Storage.h>
 
 const String Storage::FILE_PATH = "/test";
+const String Storage::FILE_EXTENSION = ".bin";
 
 bool Storage::begin()
 {
@@ -51,7 +52,7 @@ String Storage::getNewFileName()
         entry.close();
     }
     number += 1;
-    return FILE_PATH + "/" + formatLeadingZero(number, 3) + "_trac.csv";
+    return FILE_PATH + "/" + formatLeadingZero(number, 3) + "_trac" + FILE_EXTENSION;
 }
 
 String Storage::split(String data, char separator, int index)
@@ -183,7 +184,7 @@ int Storage::getFileCount(File &dire)
         if (!entry.isDirectory())
         {
             String name = String(entry.name());
-            if (name.endsWith(".csv") && name != currentDataFile.name())
+            if (name.endsWith(FILE_EXTENSION) && name != currentDataFile.name())
             {
                 fileCount++;
             }
@@ -198,9 +199,9 @@ int Storage::getFileCount(File &dire)
 
 File Storage::getFile(String name)
 {
-    if (name != currentDataFile.name() && SD.exists(FILE_PATH + "/" + name))
+    String filePath = FILE_PATH + "/" + name;
+    if (name != currentDataFile.name() && SD.exists(filePath))
     {
-        String filePath = FILE_PATH + "/" + name;
         return SD.open(filePath);
     }
     else
