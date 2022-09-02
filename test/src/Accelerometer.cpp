@@ -1,7 +1,7 @@
 #include "Accelerometer.h"
 #include <Arduino.h>
 #include <Wire.h>
-#include <Arduino_LSM6DS3.h>
+#include <LSM6DS3.h>
 
 bool Accelerometer::begin()
 {
@@ -55,7 +55,8 @@ Angles Accelerometer::getAngles()
   // Angles angles = {x, y, z};
   // applyCalibration(angles);
 
-  int x, y, z;
+  float x, y, z, x1, y1;
+  int roll, inclinacion;
   IMU.readAcceleration(x, y, z);
   x1 = RAD_TO_DEG * (atan2(-y, -z) + PI);
 

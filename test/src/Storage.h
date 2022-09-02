@@ -29,7 +29,7 @@ public:
 private:
     static const int CHIP_SELECT = 5;
     static const String FILE_PATH;
-    static const String FILE_EXTENSION = ".bin";
+    static const String FILE_EXTENSION;
     File currentDataFile;
 
     String getNewFileName();
