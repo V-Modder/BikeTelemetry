@@ -256,9 +256,6 @@ public class BluetoothService extends Service {
         telemetry.setMillisecond(StreamHelper.readShort(inputStream));
         telemetry.setRoll(StreamHelper.readInt(inputStream));
         telemetry.setPitch(StreamHelper.readInt(inputStream));
-        telemetry.setXg(StreamHelper.readDouble(inputStream));
-        telemetry.setYg(StreamHelper.readDouble(inputStream));
-        telemetry.setZg(StreamHelper.readDouble(inputStream));
 
         return telemetry;
     }

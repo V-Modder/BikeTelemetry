@@ -1,12 +1,10 @@
 FILENAME_BUILDNO = 'versioning'
 FILENAME_INCLUDE_PATH = 'include'
 FILENAME_VERSION_H = FILENAME_INCLUDE_PATH + '/version.h'
-version = 'v0.1.'
 
-import datetime
-import os
-
+version = '0.0.1'
 build_no = 0
+
 try:
     with open(FILENAME_BUILDNO) as f:
         build_no = int(f.readline()) + 1
@@ -22,14 +20,12 @@ hf = """
   #define BUILD_NUMBER "{}"
 #endif
 #ifndef VERSION
-  #define VERSION "{} - {}"
+  #define VERSION "{} - " BUILD_NUMBER
 #endif
 #ifndef VERSION_SHORT
   #define VERSION_SHORT "{}"
 #endif
-""".format(build_no, version+str(build_no), datetime.datetime.now(), version+str(build_no))
+""".format(build_no, version, version)
 
-if not os.path.isfile(FILENAME_INCLUDE_PATH):
-    os.mkdir(FILENAME_INCLUDE_PATH)
 with open(FILENAME_VERSION_H, 'w+') as f:
     f.write(hf)

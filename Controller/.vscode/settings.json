@@ -1,15 +1,19 @@
 {
     "files.associations": {
         "*.tcc": "cpp",
-        "fstream": "cpp",
-        "optional": "cpp",
-        "istream": "cpp",
-        "ostream": "cpp",
+        "ratio": "cpp",
         "system_error": "cpp",
         "array": "cpp",
         "functional": "cpp",
         "tuple": "cpp",
         "type_traits": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "fstream": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "initializer_list": "cpp"
     }
 }

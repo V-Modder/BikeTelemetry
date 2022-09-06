@@ -1,34 +1,28 @@
 package com.biketelemetry.data;
 
-import java.nio.ByteBuffer;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import theleo.jstruct.Struct;
 
 public class Telemetry {
 
     private double latitude;
     private double longitude;
+    private double altitude;
     private double distance;
+    private double speed;
+    private int year;
     private int month;
     private int day;
-    private int year;
     private int hour;
     private int minute;
     private int second;
     private int millisecond;
-    private double speed;
-    private double altitude;
+    private int satellites;
     private int roll;
     private int pitch;
-    private double Xg;
-    private double Yg;
-    private double Zg;
 
     public Telemetry() { }
 
-    public Telemetry(double latitude, double longitude, double distance, int month, int day, int year, int hour, int minute, int second, int millisecond, double speed, double altitude, int roll, int pitch, double xg, double yg, double zg) {
+    public Telemetry(double latitude, double longitude, double distance, int month, int day, int year, int hour, int minute, int second, int millisecond, double speed, double altitude, int roll, int pitch, int satelites) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.distance = distance;
@@ -43,9 +37,7 @@ public class Telemetry {
         this.altitude = altitude;
         this.roll = roll;
         this.pitch = pitch;
-        this.Xg = xg;
-        this.Yg = yg;
-        this.Zg = zg;
+        this.satellites = satelites;
     }
 
     public double getLatitude() {
@@ -186,5 +178,13 @@ public class Telemetry {
 
     public LocalDateTime getDate() {
         return LocalDateTime.of(year, month, day, hour, minute, second, millisecond * 1000);
+    }
+
+    public int getSatellites() {
+        return satellites;
+    }
+
+    public void setSatellites(int satellites) {
+        this.satellites = satellites;
     }
 }
