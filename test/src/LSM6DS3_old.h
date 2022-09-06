@@ -19,7 +19,6 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <SPI.h>
 
 #define LSM6DS3_ADDRESS            0x6A
 
@@ -52,7 +51,6 @@
 class LSM6DS3Class {
   public:
     LSM6DS3Class(TwoWire& wire, uint8_t slaveAddress);
-    LSM6DS3Class(SPIClass& spi, int csPin, int irqPin);
     virtual ~LSM6DS3Class();
 
     int begin();
@@ -77,12 +75,7 @@ class LSM6DS3Class {
 
   private:
     TwoWire* _wire;
-    SPIClass* _spi;
     uint8_t _slaveAddress;
-    int _csPin;
-    int _irqPin;
-
-    SPISettings _spiSettings;
 };
 
 extern LSM6DS3Class IMU;

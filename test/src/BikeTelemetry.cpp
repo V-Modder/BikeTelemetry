@@ -13,10 +13,16 @@ BikeTelemetry::BikeTelemetry()
 
 bool BikeTelemetry::begin()
 {
+    Serial.println("Setup BikeTelemetry...");
     Serial.print("Setup GPS START...");
     gpsSerial.begin(GPS_BAUD, SWSERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN, false);
-    Serial.println("End");
-    return accelerometer.begin();
+    Serial.println("END");
+
+    bool result = accelerometer.begin();
+    if(result) {
+        Serial.println("End");
+    }
+    return result;
 }
 
 bool BikeTelemetry::isAvailable()

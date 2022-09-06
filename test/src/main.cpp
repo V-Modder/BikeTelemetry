@@ -15,9 +15,13 @@ String getApplicationName()
 void setup()
 {
     Serial.begin(115200);
+    while(!Serial) {};
     Serial.println();
 
-    bikeTelemetry.begin();
+    if (!bikeTelemetry.begin())
+    {
+        while (true);
+    }
     delay(3000);
 
     Serial.print("Setup Storage START...");
@@ -53,6 +57,11 @@ void loop()
     {
         delay(5000);
         Serial.println("wait position");
+        Telemetry telemetry = bikeTelemetry.getTelemetry();
+        Serial.print("Pitch: ");
+        Serial.print(telemetry.pitch);
+        Serial.print(", Roll: ");
+        Serial.println(telemetry.roll);
     }
 
     if (bluetooth.inputAvailable())
