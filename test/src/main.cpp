@@ -15,6 +15,7 @@ String getApplicationName()
 void setup()
 {
     Serial.begin(115200);
+    delay(2000);
     while(!Serial) {};
     Serial.println();
 

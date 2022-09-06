@@ -1,20 +1,25 @@
 #include "Accelerometer.h"
 #include <Arduino.h>
-#include <LSM6DS3.h>
 
 bool Accelerometer::begin()
 {
     Serial.print("Setup Accelerometer START...");
-    bool imuBegin = IMU.begin();
+    Wire.begin();
+    bool imuBegin = myIMU.begin();
     Serial.println("End");
     return imuBegin;
 }
 
 Angles Accelerometer::getAngles()
 {
-    float x, y, z, x1, y1;
-    int roll, inclinacion;
-    IMU.readAcceleration(x, y, z);
+    float x1, y1, inclinacion, roll;
+    float x = myIMU.readFloatAccelX();
+    float y = myIMU.readFloatAccelY();
+    float z = myIMU.readFloatAccelZ();
+    float temp = myIMU.readRawTemp();
+
+    temp = (temp / 530.0) + 25;
+
     x1 = RAD_TO_DEG * (atan2(-y, -z) + PI);
 
     if (x1 > 180)
@@ -37,12 +42,5 @@ Angles Accelerometer::getAngles()
         roll = y1;
     }
 
-    return {roll, inclinacion};
-}
-
-void Accelerometer::applyCalibration(Angles &angles)
-{
-    // angles.X += calibration.X;
-    // angles.Y += calibration.Y;
-    // angles.Z += calibration.Z;
+    return {(int)roll, (int)inclinacion, (int)temp};
 }
