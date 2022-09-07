@@ -77,6 +77,7 @@ Telemetry BikeTelemetry::getTelemetry()
 
     telemetry.roll = angles.Roll;
     telemetry.pitch = angles.Pitch;
+    telemetry.temperature = angles.Temp;
 
     return telemetry;
 }

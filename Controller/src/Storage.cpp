@@ -14,24 +14,23 @@ bool Storage::begin()
         Serial.println("Note: press reset or reopen this serial monitor after fixing your issue!");
         return false;
     }
-    else
-    {
-        Serial.print("\n    SD card size: ");
-        Serial.print(SD.totalBytes() / (1024 * 1024));
-        Serial.println(" mb");
+    
+    Serial.print("\n    SD card size: ");
+    Serial.print(SD.totalBytes() / (1024 * 1024));
+    Serial.println(" mb");
 
-        SD.mkdir(FILE_PATH);
-        String newFile = getNewFileName();
-        Serial.print("\t");
-        Serial.println(newFile);
-        currentDataFile = SD.open(newFile, FILE_WRITE);
-        if (!currentDataFile)
-        {
-            Serial.println("Cannot create file " + newFile);
-            return false;
-        }
-        return true;
+    SD.mkdir(FILE_PATH);
+    String newFile = getNewFileName();
+    Serial.print("\t");
+    Serial.println(newFile);
+    currentDataFile = SD.open(newFile, FILE_WRITE);
+    if (!currentDataFile)
+    {
+        Serial.println("Cannot create file " + newFile);
+        return false;
     }
+
+    return true;
 }
 
 String Storage::getNewFileName()
@@ -74,31 +73,6 @@ String Storage::split(String data, char separator, int index)
     return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
-/*
-int stringSplit(String sInput, char cDelim, String sParams[], int iMaxParams) {
-    int iParamCount = 0;
-    int iPosDelim, iPosStart = 0;
-
-    do {
-      iPosDelim = sInput.indexOf(cDelim,iPosStart);
-      if (iPosDelim > (iPosStart+1)) {
-        sParams[iParamCount] = sInput.substring(iPosStart,iPosDelim-1);
-        iParamCount++;
-        if (iParamCount >= iMaxParams) {
-          return (iParamCount);
-        }
-        iPosStart = iPosDelim + 1;
-      }
-    } while (iPosDelim >= 0);
-    
-    if (iParamCount < iMaxParams) {
-      sParams[iParamCount] = sInput.substring(iPosStart);
-      iParamCount++;
-    }
-
-    return iParamCount;
-}*/
-
 String Storage::formatLeadingZero(int number, int digits)
 {
     String prefix = "";
@@ -116,22 +90,6 @@ String Storage::formatLeadingZero(int number, int digits)
 
 void Storage::writeToSd(Telemetry &telemetry)
 {
-    /*String line = String(telemetry.latitude, 6);
-    line += "|" + String(telemetry.longitude, 6);
-    line += "|" + String(telemetry.altitude, 6);
-    line += "|" + String(telemetry.distance, 1);
-    line += "|" + String(telemetry.speed);
-    line += "|" + String(telemetry.month);
-    line += "|" + String(telemetry.day);
-    line += "|" + String(telemetry.year);
-    line += "|" + String(telemetry.hour);
-    line += "|" + String(telemetry.minute);
-    line += "|" + String(telemetry.second);
-    line += "|" + String(telemetry.millisecond);
-    line += "|" + String(telemetry.satellites);
-    line += "|" + String(telemetry.hdop);
-    currentDataFile.println(line);*/
-
     currentDataFile.write((const uint8_t *)&telemetry, sizeof(telemetry));
     currentDataFile.flush();
 }
@@ -160,7 +118,7 @@ FileList Storage::getFileList()
             String name = String(entry.name());
             if (name.endsWith(".csv") && name != currentDataFile.name())
             {
-                list.entries[i].name = (char *)name.substring(name.lastIndexOf('/') + 1).c_str(); //entry.name();
+                list.entries[i].name = (char *)name.substring(name.lastIndexOf('/') + 1).c_str();
                 list.entries[i].size = entry.size();
                 i++;
             }

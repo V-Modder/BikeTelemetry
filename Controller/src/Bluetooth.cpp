@@ -7,18 +7,18 @@ Bluetooth::Bluetooth()
 
 bool Bluetooth::begin(String applicationName, Storage &storage, ITelemetryStatusReportable &bikeTelemetry)
 {
+    Serial.print("Setup Bluetooth START...");
     this->applicationName = applicationName;
     this->storage = storage;
     this->bikeTelemetry = bikeTelemetry;
-    if (bluetoothSerial.begin("Bike-Telemetry"))
+    if (!bluetoothSerial.begin("Bike-Telemetry"))
     {
-        return true;
-    }
-    else
-    {
-        Serial.println("Error starting bluetooth serial");
+        Serial.println("Error initialize bluetooth serial");
         return false;
     }
+
+    Serial.println("End");
+    return true;
 }
 
 bool Bluetooth::inputAvailable()
@@ -92,8 +92,6 @@ void Bluetooth::writeFileList()
         writeFileListEntry(list.entries[i]);
     }
     free(list.entries);
-
-    //bluetoothSerial.write(RESPONSE_TAG_GET_FILE_LIST_ENTRY_END);
 }
 
 void Bluetooth::writeFileListEntry(FileListEntry &entry)
@@ -107,33 +105,6 @@ void Bluetooth::writeTelemetry(Telemetry &telemetry)
 {
     bluetoothSerial.write(RESPONSE_TAG_TELEMETRY);
     bluetoothSerial.write((const uint8_t *)&telemetry, sizeof(telemetry));
-
-    /*
-    uint8_t *ptr = (uint8_t *)&telemetry;
-    for (unsigned int i = 0; i < sizeof(Telemetry); i++)
-    {
-        bluetoothSerial.write(*ptr++);
-    }
-    
-    writeDouble(telemetry.latitude);
-    writeDouble(telemetry.longitude);
-    writeDouble(telemetry.altitude);
-    writeDouble(telemetry.distance);
-    writeDouble(telemetry.speed);
-    writeShort(telemetry.year);
-    bluetoothSerial.write(telemetry.month);
-    bluetoothSerial.write(telemetry.day);
-    bluetoothSerial.write(telemetry.hour);
-    bluetoothSerial.write(telemetry.minute);
-    bluetoothSerial.write(telemetry.second);
-    writeShort(telemetry.millisecond);
-    bluetoothSerial.write(telemetry.satellites);
-    bluetoothSerial.write(telemetry.hdop);
-    writeInt(telemetry.roll);
-    writeInt(telemetry.pitch);
-    writeDouble(telemetry.xg);
-    writeDouble(telemetry.yg);
-    writeDouble(telemetry.zg); */
 }
 
 void Bluetooth::writeInt(int value)

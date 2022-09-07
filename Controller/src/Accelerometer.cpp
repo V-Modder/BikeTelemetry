@@ -3,11 +3,18 @@
 
 bool Accelerometer::begin()
 {
-    Serial.print("Setup Accelerometer START...");
-    Wire.begin();
-    bool imuBegin = myIMU.begin();
+    Serial.print("  Setup Accelerometer START...");
+    if(!Wire.begin()) {
+        Serial.println("\n  Error initialize Wire");
+        return false;
+    }
+    if(!myIMU.begin()) {
+        Serial.println("\n  Error initialize IMU");
+        return false;
+    }
+    
     Serial.println("End");
-    return imuBegin;
+    return true;
 }
 
 Angles Accelerometer::getAngles()

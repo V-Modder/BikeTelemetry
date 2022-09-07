@@ -1,11 +1,13 @@
 package com.biketelemetry.service;
 
+import android.Manifest;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -15,8 +17,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 
 import com.biketelemetry.data.Telemetry;
+import com.biketelemetry.data.TelemetryBuilder;
 import com.biketelemetry.data.TelemetryFileListEntry;
 
 import java.io.File;
@@ -47,6 +51,7 @@ public class BluetoothService extends Service {
     public static final byte REQUEST_TAG_GET_FILE = 4;
     public static final byte REQUEST_TAG_DELETE_FILE = 5;
     public static final byte REQUEST_TAG_ENABLE_TELEMETRY = 6;
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 54141;
 
     private BluetoothSocket socket;
     private boolean interrupted;
@@ -153,7 +158,9 @@ public class BluetoothService extends Service {
         }
 
         try {
-            socket = telemetryDevice.get().createRfcommSocketToServiceRecord(telemetryDevice.get().getUuids()[0].getUuid());
+            if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+                socket = telemetryDevice.get().createRfcommSocketToServiceRecord(telemetryDevice.get().getUuids()[0].getUuid());
+            }
 
             if(!socket.isConnected()) {
                 socket.connect();
@@ -241,27 +248,36 @@ public class BluetoothService extends Service {
 
     @NonNull
     private Telemetry receiveTelemetry(InputStream inputStream) throws IOException {
-        Telemetry telemetry = new Telemetry();
-        telemetry.setLatitude(StreamHelper.readDouble(inputStream));
-        telemetry.setLongitude(StreamHelper.readDouble(inputStream));
-        telemetry.setAltitude(StreamHelper.readDouble(inputStream));
-        telemetry.setDistance(StreamHelper.readDouble(inputStream));
-        telemetry.setSpeed(StreamHelper.readDouble(inputStream));
-        telemetry.setYear(StreamHelper.readShort(inputStream));
-        telemetry.setMonth(inputStream.read());
-        telemetry.setDay(inputStream.read());
-        telemetry.setHour(inputStream.read());
-        telemetry.setMinute(inputStream.read());
-        telemetry.setSecond(inputStream.read());
-        telemetry.setMillisecond(StreamHelper.readShort(inputStream));
-        telemetry.setRoll(StreamHelper.readInt(inputStream));
-        telemetry.setPitch(StreamHelper.readInt(inputStream));
-
-        return telemetry;
+        return new TelemetryBuilder()
+            .withLatitude(StreamHelper.readDouble(inputStream))
+            .withLongitude(StreamHelper.readDouble(inputStream))
+            .withAltitude(StreamHelper.readDouble(inputStream))
+            .withDistance(StreamHelper.readDouble(inputStream))
+            .withSpeed(StreamHelper.readDouble(inputStream))
+            .withYear(StreamHelper.readShort(inputStream))
+            .withMonth(inputStream.read())
+            .withDay(inputStream.read())
+            .withHour(inputStream.read())
+            .withMinute(inputStream.read())
+            .withSecond(inputStream.read())
+            .withMillisecond(StreamHelper.readShort(inputStream))
+            .withSatellites(inputStream.read())
+            .withHdop(inputStream.read())
+            .withRoll(inputStream.read())
+            .withPitch(inputStream.read())
+            .withTemperature(inputStream.read())
+            .createTelemetry();
     }
 
     private Optional<BluetoothDevice> getTelemetryDevice() {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+        if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(applicationContext,
+                    new String[]{Manifest.permission.BLUETOOTH_CONNECT},
+                    MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+        }
+
         return adapter.getBondedDevices()
                 .stream()
                 .filter(dev -> TELEMETRY_DEVICE_NAME.equals(dev.getName()))

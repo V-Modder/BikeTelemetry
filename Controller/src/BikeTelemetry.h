@@ -23,8 +23,9 @@ struct __attribute__((packed)) Telemetry
     short millisecond;
     char satellites;
     char hdop;
-    int roll;
-    int pitch;
+    char roll;
+    char pitch;
+    char temperature;
 };
 
 class BikeTelemetry : public ITelemetryStatusReportable

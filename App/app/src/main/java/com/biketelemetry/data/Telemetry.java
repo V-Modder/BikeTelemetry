@@ -17,27 +17,35 @@ public class Telemetry {
     private int second;
     private int millisecond;
     private int satellites;
+    private int hdop;
     private int roll;
     private int pitch;
+    private int temperature;
 
-    public Telemetry() { }
+    Telemetry() { }
 
-    public Telemetry(double latitude, double longitude, double distance, int month, int day, int year, int hour, int minute, int second, int millisecond, double speed, double altitude, int roll, int pitch, int satelites) {
+    Telemetry(double latitude, double longitude, double altitude, double distance, double speed, int year, int month, int day, int hour, int minute, int second, int millisecond, int satellites, int hdop, int roll, int pitch, int temperature) {
         this.latitude = latitude;
         this.longitude = longitude;
+        this.altitude = altitude;
         this.distance = distance;
+        this.speed = speed;
+        this.year = year;
         this.month = month;
         this.day = day;
-        this.year = year;
         this.hour = hour;
         this.minute = minute;
         this.second = second;
         this.millisecond = millisecond;
-        this.speed = speed;
-        this.altitude = altitude;
+        this.satellites = satellites;
+        this.hdop = hdop;
         this.roll = roll;
         this.pitch = pitch;
-        this.satellites = satelites;
+        this.temperature = temperature;
+    }
+
+    public LocalDateTime getDate() {
+        return LocalDateTime.of(year, month, day, hour, minute, second, millisecond * 1000);
     }
 
     public double getLatitude() {
@@ -56,12 +64,36 @@ public class Telemetry {
         this.longitude = longitude;
     }
 
+    public double getAltitude() {
+        return altitude;
+    }
+
+    public void setAltitude(double altitude) {
+        this.altitude = altitude;
+    }
+
     public double getDistance() {
         return distance;
     }
 
     public void setDistance(double distance) {
         this.distance = distance;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
     }
 
     public int getMonth() {
@@ -78,14 +110,6 @@ public class Telemetry {
 
     public void setDay(int day) {
         this.day = day;
-    }
-
-    public int getYear() {
-        return year;
-    }
-
-    public void setYear(int year) {
-        this.year = year;
     }
 
     public int getHour() {
@@ -120,20 +144,20 @@ public class Telemetry {
         this.millisecond = millisecond;
     }
 
-    public double getSpeed() {
-        return speed;
+    public int getSatellites() {
+        return satellites;
     }
 
-    public void setSpeed(double speed) {
-        this.speed = speed;
+    public void setSatellites(int satellites) {
+        this.satellites = satellites;
     }
 
-    public double getAltitude() {
-        return altitude;
+    public int getHdop() {
+        return hdop;
     }
 
-    public void setAltitude(double altitude) {
-        this.altitude = altitude;
+    public void setHdop(int hdop) {
+        this.hdop = hdop;
     }
 
     public int getRoll() {
@@ -152,39 +176,11 @@ public class Telemetry {
         this.pitch = pitch;
     }
 
-    public double getXg() {
-        return Xg;
+    public int getTemperature() {
+        return temperature;
     }
 
-    public void setXg(double xg) {
-        Xg = xg;
-    }
-
-    public double getYg() {
-        return Yg;
-    }
-
-    public void setYg(double yg) {
-        Yg = yg;
-    }
-
-    public double getZg() {
-        return Zg;
-    }
-
-    public void setZg(double zg) {
-        Zg = zg;
-    }
-
-    public LocalDateTime getDate() {
-        return LocalDateTime.of(year, month, day, hour, minute, second, millisecond * 1000);
-    }
-
-    public int getSatellites() {
-        return satellites;
-    }
-
-    public void setSatellites(int satellites) {
-        this.satellites = satellites;
+    public void setTemperature(int temperature) {
+        this.temperature = temperature;
     }
 }
