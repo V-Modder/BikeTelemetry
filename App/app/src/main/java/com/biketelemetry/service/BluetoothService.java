@@ -184,12 +184,13 @@ public class BluetoothService extends Service {
         while(!received && !interrupted) {
             try {
                 InputStream inputStream = socket.getInputStream();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
                 while (inputStream.available() > 0) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     int messageType = inputStream.read();
                     switch (messageType) {
                         case RESPONSE_TAG_DEVICE_INFO:
@@ -273,7 +274,7 @@ public class BluetoothService extends Service {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 
         if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(applicationContext,
+            ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.BLUETOOTH_CONNECT},
                     MY_PERMISSIONS_REQUEST_READ_CONTACTS);
         }

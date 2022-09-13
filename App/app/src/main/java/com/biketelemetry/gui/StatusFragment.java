@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 
 import com.biketelemetry.R;
 import com.biketelemetry.data.TelemetryFileListEntry;
+import com.biketelemetry.new_service.BluetoothSDKService;
 import com.biketelemetry.service.BluetoothService;
 
 public class StatusFragment extends Fragment {
