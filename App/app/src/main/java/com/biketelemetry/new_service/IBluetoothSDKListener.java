@@ -2,7 +2,7 @@ package com.biketelemetry.new_service;
 
 import android.bluetooth.BluetoothDevice;
 
-interface IBluetoothSDKListener {
+public interface IBluetoothSDKListener {
     /**
      * from action BluetoothUtils.ACTION_DISCOVERY_STARTED
      */

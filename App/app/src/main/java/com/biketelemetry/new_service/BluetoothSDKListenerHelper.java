@@ -9,9 +9,9 @@ import android.content.IntentFilter;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class BluetoothSDKListenerHelper {
-    private BluetoothSDKBroadcastReceiver mBluetoothSDKBroadcastReceiver;
+    private static BluetoothSDKBroadcastReceiver mBluetoothSDKBroadcastReceiver;
 
-    public void registerBluetoothSDKListener(Context context, IBluetoothSDKListener listener) {
+    public static void registerBluetoothSDKListener(Context context, IBluetoothSDKListener listener) {
         if (mBluetoothSDKBroadcastReceiver == null) {
             mBluetoothSDKBroadcastReceiver = new BluetoothSDKBroadcastReceiver();
 
@@ -33,7 +33,7 @@ public class BluetoothSDKListenerHelper {
         mBluetoothSDKBroadcastReceiver.setBluetoothSDKListener(listener);
     }
 
-    public void unregisterBluetoothSDKListener(Context context, IBluetoothSDKListener listener) {
+    public static void unregisterBluetoothSDKListener(Context context, IBluetoothSDKListener listener) {
         if (mBluetoothSDKBroadcastReceiver != null) {
             if (mBluetoothSDKBroadcastReceiver.removeBluetoothSDKListener(listener)) {
                 LocalBroadcastManager.getInstance(context)
