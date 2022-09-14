@@ -7,11 +7,15 @@ import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.IBinder;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Set;
 
 public class BluetoothSDKService extends Service {
@@ -43,9 +47,26 @@ public class BluetoothSDKService extends Service {
     }
 
     class LocalBinder extends Binder {
-        /*
-        Function that can be called from Activity or Fragment
-        */
+        /**
+         * Enable the discovery, registering a broadcastreceiver {@link discoveryBroadcastReceiver}
+         * The discovery filter by LABELER_SERVER_TOKEN_NAME
+         */
+        public void startDiscovery(Context context) {
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+            registerReceiver(discoveryBroadcastReceiver, filter);
+            bluetoothAdapter.startDiscovery();
+            pushBroadcastMessage(BluetoothUtils.ACTION_DISCOVERY_STARTED, null, null);
+        }
+
+
+        /**
+         * stop discovery
+         */
+        public void stopDiscovery() {
+            bluetoothAdapter.cancelDiscovery();
+            pushBroadcastMessage(BluetoothUtils.ACTION_DISCOVERY_STOPPED, null, null);
+        }
     }
 
 
@@ -76,9 +97,78 @@ public class BluetoothSDKService extends Service {
 
     private class ConnectedThread extends Thread {
         private BluetoothSocket mmSocket;
+        private InputStream mmInStream;
+        private OutputStream mmOutStream;
+        private byte[] mmBuffer;
 
-        public  ConnectedThread(BluetoothSocket bluetoothSocket) {
+
+        public ConnectedThread(BluetoothSocket bluetoothSocket) throws IOException {
             this.mmSocket = bluetoothSocket;
+            mmInStream = mmSocket.getInputStream();
+            mmOutStream = mmSocket.getOutputStream();
+            mmBuffer = new byte[1024];
+        }
+
+        @Override
+         public void run() {
+            int numBytes;
+
+            // Keep listening to the InputStream until an exception occurs.
+            while (true) {
+                // Read from the InputStream.
+                 try {
+                     numBytes = mmInStream.read(mmBuffer);
+                } catch (IOException e) {
+                    pushBroadcastMessage(
+                            BluetoothUtils.ACTION_CONNECTION_ERROR,
+                            null,
+                            "Input stream was disconnected"
+                    );
+                    break;
+                }
+
+                String message = new String(mmBuffer, 0, numBytes);
+
+                // Send to broadcast the message
+                pushBroadcastMessage(
+                        BluetoothUtils.ACTION_MESSAGE_RECEIVED,
+                        mmSocket.getRemoteDevice(),
+                        message
+                );
+            }
+        }
+
+        // Call this from the main activity to send data to the remote device.
+        public void write(byte[] bytes) {
+            try {
+                mmOutStream.write(bytes);
+
+                // Send to broadcast the message
+                pushBroadcastMessage(
+                        BluetoothUtils.ACTION_MESSAGE_SENT,
+                        mmSocket.getRemoteDevice(),
+                        null
+                );
+            } catch (IOException e) {
+                pushBroadcastMessage(
+                        BluetoothUtils.ACTION_CONNECTION_ERROR,
+                        null,
+                        "Error occurred when sending data"
+                );
+            }
+        }
+
+        // Call this method from the main activity to shut down the connection.
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                pushBroadcastMessage(
+                        BluetoothUtils.ACTION_CONNECTION_ERROR,
+                        null,
+                        "Could not close the connect socket"
+                );
+            }
         }
     }
 
