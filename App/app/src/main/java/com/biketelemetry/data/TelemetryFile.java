@@ -1,6 +1,9 @@
 package com.biketelemetry.data;
 
-public class TelemetryFile {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class TelemetryFile implements Parcelable {
     private String action;
     private String filename;
 
@@ -24,4 +27,31 @@ public class TelemetryFile {
     }
 
     public void setAction(String action) { this.action = action; }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(action);
+        dest.writeString(filename);
+    }
+
+    public static final Parcelable.Creator<TelemetryFile> CREATOR
+            = new Parcelable.Creator<TelemetryFile>() {
+        public TelemetryFile createFromParcel(Parcel in) {
+            return new TelemetryFile(in);
+        }
+
+        public TelemetryFile[] newArray(int size) {
+            return new TelemetryFile[size];
+        }
+    };
+
+    private TelemetryFile(Parcel in) {
+        action = in.readString();
+        filename = in.readString();
+    }
 }

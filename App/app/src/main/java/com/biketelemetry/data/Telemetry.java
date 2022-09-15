@@ -1,8 +1,11 @@
 package com.biketelemetry.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.time.LocalDateTime;
 
-public class Telemetry {
+public class Telemetry implements Parcelable {
 
     private double latitude;
     private double longitude;
@@ -182,5 +185,62 @@ public class Telemetry {
 
     public void setTemperature(int temperature) {
         this.temperature = temperature;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+        dest.writeDouble(altitude);
+        dest.writeDouble(distance);
+        dest.writeDouble(speed);
+        dest.writeInt(year);
+        dest.writeInt(month);
+        dest.writeInt(day);
+        dest.writeInt(hour);
+        dest.writeInt(minute);
+        dest.writeInt(second);
+        dest.writeInt(millisecond);
+        dest.writeInt(satellites);
+        dest.writeInt(hdop);
+        dest.writeInt(roll);
+        dest.writeInt(pitch);
+        dest.writeInt(temperature);
+    }
+
+    public static final Parcelable.Creator<Telemetry> CREATOR
+            = new Parcelable.Creator<Telemetry>() {
+        public Telemetry createFromParcel(Parcel in) {
+            return new Telemetry(in);
+        }
+
+        public Telemetry[] newArray(int size) {
+            return new Telemetry[size];
+        }
+    };
+
+    private Telemetry(Parcel in) {
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        altitude = in.readDouble();
+        distance = in.readDouble();
+        speed = in.readDouble();
+        year = in.readInt();
+        month = in.readInt();
+        day = in.readInt();
+        hour = in.readInt();
+        minute = in.readInt();
+        second = in.readInt();
+        millisecond = in.readInt();
+        satellites = in.readInt();
+        hdop = in.readInt();
+        roll = in.readInt();
+        pitch = in.readInt();
+        temperature = in.readInt();
     }
 }

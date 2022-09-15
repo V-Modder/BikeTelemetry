@@ -20,7 +20,10 @@ public class BluetoothSDKListenerHelper {
             intentFilter.addAction(BluetoothUtils.ACTION_DISCOVERY_STARTED);
             intentFilter.addAction(BluetoothUtils.ACTION_DISCOVERY_STOPPED);
             intentFilter.addAction(BluetoothUtils.ACTION_DEVICE_CONNECTED);
-            intentFilter.addAction(BluetoothUtils.ACTION_MESSAGE_RECEIVED);
+            intentFilter.addAction(BluetoothUtils.ACTION_DEVICE_INFO_RECEIVED);
+            intentFilter.addAction(BluetoothUtils.ACTION_FILE_LIST_ENTRY_RECEIVED);
+            intentFilter.addAction(BluetoothUtils.ACTION_FILE_RECEIVED);
+            intentFilter.addAction(BluetoothUtils.ACTION_TELEMETRY_RECEIVED);
             intentFilter.addAction(BluetoothUtils.ACTION_MESSAGE_SENT);
             intentFilter.addAction(BluetoothUtils.ACTION_CONNECTION_ERROR);
             intentFilter.addAction(BluetoothUtils.ACTION_DEVICE_DISCONNECTED);
