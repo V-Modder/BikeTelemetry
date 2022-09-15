@@ -1,5 +1,6 @@
 package com.biketelemetry.new_service;
 
+import android.Manifest;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -8,11 +9,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.biketelemetry.data.Telemetry;
@@ -87,46 +90,43 @@ public class BluetoothSDKService extends Service {
         private OutputStream mmOutStream;
         private byte[] mmBuffer;
 
-        public ConnectedThread(BluetoothSocket bluetoothSocket) throws IOException {
+        public ConnectedThread(BluetoothSocket bluetoothSocket) {
             this.mmSocket = bluetoothSocket;
-            mmInStream = mmSocket.getInputStream();
-            mmOutStream = mmSocket.getOutputStream();
+            try {
+                mmInStream = mmSocket.getInputStream();
+                mmOutStream = mmSocket.getOutputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             mmBuffer = new byte[1024];
         }
 
         @Override
-         public void run() {
-            int numBytes;
-
-            // Keep listening to the InputStream until an exception occurs.
+        public void run() {
             while (true) {
-                // Read from the InputStream.
-                 try {
-                     numBytes = mmInStream.read();
-                     readData(mmInStream, mmSocket.getRemoteDevice());
-                 } catch (IOException e) {
-                     pushBroadcastMessage(BluetoothUtils.ACTION_CONNECTION_ERROR,null,null,"Input stream was disconnected");
-                     break;
-                 }
+                try {
+                    readData(mmInStream, mmSocket.getRemoteDevice());
+                } catch (IOException e) {
+                    pushBroadcastMessage(BluetoothUtils.ACTION_CONNECTION_ERROR, null, null, "Input stream was disconnected");
+                    break;
+                }
             }
         }
 
-        // Call this from the main activity to send data to the remote device.
         public void write(byte[] bytes) {
             try {
                 mmOutStream.write(bytes);
-                pushBroadcastMessage(BluetoothUtils.ACTION_MESSAGE_SENT, mmSocket.getRemoteDevice(), null,null);
+                pushBroadcastMessage(BluetoothUtils.ACTION_MESSAGE_SENT, mmSocket.getRemoteDevice(), null, null);
             } catch (IOException e) {
-                pushBroadcastMessage(BluetoothUtils.ACTION_CONNECTION_ERROR,null, null,"Error occurred when sending data");
+                pushBroadcastMessage(BluetoothUtils.ACTION_CONNECTION_ERROR, null, null, "Error occurred when sending data");
             }
         }
 
-        // Call this method from the main activity to shut down the connection.
         public void cancel() {
             try {
                 mmSocket.close();
             } catch (IOException e) {
-                pushBroadcastMessage(BluetoothUtils.ACTION_CONNECTION_ERROR,null, null, "Could not close the connect socket");
+                pushBroadcastMessage(BluetoothUtils.ACTION_CONNECTION_ERROR, null, null, "Could not close the connect socket");
             }
         }
 
@@ -141,7 +141,7 @@ public class BluetoothSDKService extends Service {
                 int messageType = inputStream.read();
                 switch (messageType) {
                     case BluetoothUtils.RESPONSE_TAG_DEVICE_INFO:
-                        pushBroadcastMessage(BluetoothUtils.ACTION_DEVICE_INFO_RECEIVED, device,null, receiveDeviceInfo(inputStream));
+                        pushBroadcastMessage(BluetoothUtils.ACTION_DEVICE_INFO_RECEIVED, device, null, receiveDeviceInfo(inputStream));
                         break;
                     case BluetoothUtils.RESPONSE_TAG_GET_FILE_LIST_ENTRY:
                         pushBroadcastMessage(BluetoothUtils.ACTION_FILE_LIST_ENTRY_RECEIVED, device, receiveFileListEntry(inputStream), null);
@@ -150,7 +150,7 @@ public class BluetoothSDKService extends Service {
                     //    pushBroadcastMessage(BluetoothUtils., device, null, null);
                     //    break;
                     case BluetoothUtils.RESPONSE_TAG_GET_FILE:
-                        pushBroadcastMessage(BluetoothUtils.ACTION_FILE_RECEIVED, device,null, receiveFile(inputStream));
+                        pushBroadcastMessage(BluetoothUtils.ACTION_FILE_RECEIVED, device, null, receiveFile(inputStream));
                         break;
                     case BluetoothUtils.RESPONSE_TAG_TELEMETRY:
                         pushBroadcastMessage(BluetoothUtils.ACTION_TELEMETRY_RECEIVED, device, receiveTelemetry(inputStream), null);
@@ -173,7 +173,7 @@ public class BluetoothSDKService extends Service {
         @NonNull
         private String receiveFile(InputStream inputStream) throws IOException {
             File tmpFile = File.createTempFile("download", ".csv", getCacheDir());
-            try(FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
+            try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
                 int remainingBytes = StreamHelper.readInt(inputStream);
                 while (remainingBytes > 0) {
                     int bytesToRead = remainingBytes < 500 ? remainingBytes : 500;
@@ -234,7 +234,7 @@ public class BluetoothSDKService extends Service {
         if (parcelable != null) {
             intent.putExtra(BluetoothUtils.EXTRA_PARCEBLE, parcelable);
         }
-        if(str != null) {
+        if (str != null) {
             intent.putExtra(BluetoothUtils.EXTRA_STRING, str);
         }
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
@@ -245,11 +245,31 @@ public class BluetoothSDKService extends Service {
             IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
             registerReceiver(discoveryBroadcastReceiver, filter);
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             bluetoothAdapter.startDiscovery();
-            pushBroadcastMessage(BluetoothUtils.ACTION_DISCOVERY_STARTED, null,null, null);
+            pushBroadcastMessage(BluetoothUtils.ACTION_DISCOVERY_STARTED, null, null, null);
         }
 
-        public void stopDiscovery() {
+        public void stopDiscovery(Context context) {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             bluetoothAdapter.cancelDiscovery();
             pushBroadcastMessage(BluetoothUtils.ACTION_DISCOVERY_STOPPED, null,  null,null);
         }

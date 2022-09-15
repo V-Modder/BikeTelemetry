@@ -12,6 +12,10 @@ import com.biketelemetry.data.TelemetryFileListEntry;
 public class BluetoothSDKBroadcastReceiver extends BroadcastReceiver {
     private IBluetoothSDKListener mGlobalListener;
 
+    public IBluetoothSDKListener getBluetoothSDKListener() {
+        return mGlobalListener;
+    }
+
     public void setBluetoothSDKListener(IBluetoothSDKListener listener) {
         mGlobalListener = listener;
     }

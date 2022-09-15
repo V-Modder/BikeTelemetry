@@ -273,11 +273,11 @@ public class BluetoothService extends Service {
     private Optional<BluetoothDevice> getTelemetryDevice() {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 
-        if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.BLUETOOTH_CONNECT},
-                    MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-        }
+//        if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
+//            ActivityCompat.requestPermissions(this,
+//                    new String[]{Manifest.permission.BLUETOOTH_CONNECT},
+//                    MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+//        }
 
         return adapter.getBondedDevices()
                 .stream()

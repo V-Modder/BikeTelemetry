@@ -1,48 +1,52 @@
 package com.biketelemetry.new_service;
 
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 public class BluetoothSDKListenerHelper {
-    private static BluetoothSDKBroadcastReceiver mBluetoothSDKBroadcastReceiver;
+    private static List<BluetoothSDKBroadcastReceiver> receivers;
 
     public static void registerBluetoothSDKListener(Context context, IBluetoothSDKListener listener) {
-        if (mBluetoothSDKBroadcastReceiver == null) {
-            mBluetoothSDKBroadcastReceiver = new BluetoothSDKBroadcastReceiver();
-
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(BluetoothUtils.ACTION_DEVICE_FOUND);
-            intentFilter.addAction(BluetoothUtils.ACTION_DISCOVERY_STARTED);
-            intentFilter.addAction(BluetoothUtils.ACTION_DISCOVERY_STOPPED);
-            intentFilter.addAction(BluetoothUtils.ACTION_DEVICE_CONNECTED);
-            intentFilter.addAction(BluetoothUtils.ACTION_DEVICE_INFO_RECEIVED);
-            intentFilter.addAction(BluetoothUtils.ACTION_FILE_LIST_ENTRY_RECEIVED);
-            intentFilter.addAction(BluetoothUtils.ACTION_FILE_RECEIVED);
-            intentFilter.addAction(BluetoothUtils.ACTION_TELEMETRY_RECEIVED);
-            intentFilter.addAction(BluetoothUtils.ACTION_MESSAGE_SENT);
-            intentFilter.addAction(BluetoothUtils.ACTION_CONNECTION_ERROR);
-            intentFilter.addAction(BluetoothUtils.ACTION_DEVICE_DISCONNECTED);
-
-
-            LocalBroadcastManager.getInstance(context)
-                    .registerReceiver(mBluetoothSDKBroadcastReceiver, intentFilter);
+        if (receivers == null) {
+            receivers = new ArrayList<BluetoothSDKBroadcastReceiver>();
         }
-
-        mBluetoothSDKBroadcastReceiver.setBluetoothSDKListener(listener);
+        receiverRegistered(listener)
+            .orElse(createReceiver(context, listener));
     }
 
     public static void unregisterBluetoothSDKListener(Context context, IBluetoothSDKListener listener) {
-        if (mBluetoothSDKBroadcastReceiver != null) {
-            if (mBluetoothSDKBroadcastReceiver.removeBluetoothSDKListener(listener)) {
-                LocalBroadcastManager.getInstance(context)
-                        .unregisterReceiver(mBluetoothSDKBroadcastReceiver);
-                mBluetoothSDKBroadcastReceiver = null;
-            }
+        if (receivers != null) {
+            receiverRegistered(listener).ifPresent(r -> {
+               if(r.removeBluetoothSDKListener(listener)) {
+                   LocalBroadcastManager.getInstance(context)
+                           .unregisterReceiver(r);
+               }
+            });
         }
+    }
+
+    private static Optional<BluetoothSDKBroadcastReceiver> receiverRegistered(IBluetoothSDKListener listener) {
+        return receivers.stream()
+            .filter(r -> r.getBluetoothSDKListener() == listener)
+            .findFirst();
+    }
+
+    private static BluetoothSDKBroadcastReceiver createReceiver(Context context, IBluetoothSDKListener listener) {
+        BluetoothSDKBroadcastReceiver receiver = new BluetoothSDKBroadcastReceiver();
+        receiver.setBluetoothSDKListener(listener);
+
+        IntentFilter intentFilter = new IntentFilter();
+        listener.getFilter().forEach(filter -> intentFilter.addAction(filter));
+
+        LocalBroadcastManager.getInstance(context)
+                .registerReceiver(receiver, intentFilter);
+
+        return receiver;
     }
 }

@@ -22,9 +22,13 @@ import com.biketelemetry.R;
 import com.biketelemetry.data.TelemetryFileListEntry;
 import com.biketelemetry.new_service.BluetoothSDKListenerHelper;
 import com.biketelemetry.new_service.BluetoothSDKService;
+import com.biketelemetry.new_service.BluetoothUtils;
 import com.biketelemetry.new_service.IBluetoothSDKListener;
 import com.biketelemetry.service.BluetoothService;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class StatusFragment extends BottomSheetDialogFragment implements IBluetoothSDKListener {
 
@@ -32,7 +36,7 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
 //    private Messenger bluetoothServiceReply;
 //    private boolean bluetoothServiceBound;
     private BluetoothSDKService mService;
-    private FragmentPopupDiscoveredLabelerDeviceBinding binding;
+    //private FragmentPopupDiscoveredLabelerDeviceBinding binding;
 
     private StatusFragment() {
 //        bluetoothServiceInput = null;
@@ -107,7 +111,7 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_status, container, false);
-        binding = FragmentPopupDiscoveredLabelerDeviceBinding.bind(view);
+        //binding = FragmentPopupDiscoveredLabelerDeviceBinding.bind(view);
 
         bindBluetoothService();
 
@@ -138,6 +142,15 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
     };
 
     @Override
+    public List<String> getFilter() {
+        return Arrays.asList(BluetoothUtils.ACTION_DISCOVERY_STARTED, BluetoothUtils.ACTION_DISCOVERY_STOPPED,
+                BluetoothUtils.ACTION_DEVICE_FOUND, BluetoothUtils.ACTION_DEVICE_CONNECTED,
+                BluetoothUtils.ACTION_DEVICE_DISCONNECTED, BluetoothUtils.ACTION_CONNECTION_ERROR,
+                BluetoothUtils.ACTION_DEVICE_INFO_RECEIVED, BluetoothUtils.ACTION_FILE_LIST_ENTRY_RECEIVED,
+                BluetoothUtils.ACTION_FILE_RECEIVED, BluetoothUtils.ACTION_TELEMETRY_RECEIVED);
+    }
+
+    @Override
     public void onDiscoveryStarted() {
 
     }
@@ -154,11 +167,6 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
 
     @Override
     public void onDeviceConnected(BluetoothDevice device) {
-
-    }
-
-    @Override
-    public void onMessageReceived(BluetoothDevice device, String message) {
 
     }
 
