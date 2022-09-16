@@ -37,6 +37,7 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
 //    private boolean bluetoothServiceBound;
     private BluetoothSDKService mService;
     //private FragmentPopupDiscoveredLabelerDeviceBinding binding;
+    private Thread updateThread;
 
     private StatusFragment() {
 //        bluetoothServiceInput = null;
@@ -82,8 +83,18 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
     @Override
     public void onStart() {
         super.onStart();
+        if(updateThread == null) {
+            updateThread = new Thread(() -> update());
+        }
+        if(!updateThread.isAlive()) {
+            updateThread.start();
+        }
 //        Intent intent = new Intent(getContext(), BluetoothService.class);
 //        getContext().bindService(intent, bluetoothServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private void update() {
+        
     }
 
     @Override
