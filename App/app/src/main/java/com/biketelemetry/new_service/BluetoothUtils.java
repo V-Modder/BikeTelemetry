@@ -31,4 +31,7 @@ public class BluetoothUtils {
     public static final byte RESPONSE_TAG_GET_FILE_END = 6;
     public static final byte RESPONSE_TAG_TELEMETRY = 7;
     public static final byte RESPONSE_TAG_ERROR = (byte) 255;
+
+    static final String TELEMETRY_DEVICE_NAME = "Bike-Telemetry";
+    static final String TELEMETRY_DEVICE_ADRESS = "Bike-Telemetry";
 }

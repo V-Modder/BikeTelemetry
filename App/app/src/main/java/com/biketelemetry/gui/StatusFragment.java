@@ -35,9 +35,11 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
 //    private Messenger bluetoothServiceInput;
 //    private Messenger bluetoothServiceReply;
 //    private boolean bluetoothServiceBound;
-    private BluetoothSDKService mService;
+    //private BluetoothSDKService mService;
+    private BluetoothSDKService.BluetoothSDKBinder binder;
     //private FragmentPopupDiscoveredLabelerDeviceBinding binding;
     private Thread updateThread;
+    privaze boolean runUpdateThread;
 
     private StatusFragment() {
 //        bluetoothServiceInput = null;
@@ -83,24 +85,29 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
     @Override
     public void onStart() {
         super.onStart();
-        if(updateThread == null) {
-            updateThread = new Thread(() -> update());
-        }
-        if(!updateThread.isAlive()) {
-            updateThread.start();
-        }
+
+        binder.startDiscovery(getContext());
+
 //        Intent intent = new Intent(getContext(), BluetoothService.class);
 //        getContext().bindService(intent, bluetoothServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void update() {
-        
+        while(runUpdateThread) {
+            try {
+                Thread.sleep(1000);
+                binder.requestDeviceInfo();
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-//
+      if(updateThread != null && updateThread.isAlive()) {
+          runUpdateThread = false;
+      }
 //        if (bluetoothServiceBound) {
 //            getContext().unbindService(bluetoothServiceConnection);
 //            bluetoothServiceBound = false;
@@ -142,8 +149,9 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            BluetoothSDKService.BluetoothSDKBinder binder = (BluetoothSDKService.BluetoothSDKBinder)service;
-            mService = binder.getService();
+            binder = (BluetoothSDKService.BluetoothSDKBinder)service;
+            //mService = binder.getService();
+
         }
 
         @Override
@@ -178,7 +186,13 @@ public class StatusFragment extends BottomSheetDialogFragment implements IBlueto
 
     @Override
     public void onDeviceConnected(BluetoothDevice device) {
-
+        if(updateThread == null) {
+            updateThread = new Thread(() -> update());
+        }
+        if(!updateThread.isAlive()) {
+            runUpdateThread = true;
+            updateThread.start();
+        }
     }
 
     @Override

@@ -34,7 +34,7 @@ import java.util.Set;
 public class BluetoothSDKService extends Service {
 
     // Service Binder
-    private BluetoothSDKBinder binder;
+    private BluetoothSDKBinder binder = new BluetoothSDKBinder();
 
     // Bluetooth stuff
     private BluetoothAdapter bluetoothAdapter;
@@ -46,7 +46,7 @@ public class BluetoothSDKService extends Service {
     // Bluetooth connections
     private ConnectThread connectThread;
     private ConnectedThread connectedThread;
-    private AcceptThread mAcceptThread;
+//    private AcceptThread mAcceptThread;
 
     @Override
     public void onCreate() {
@@ -72,11 +72,37 @@ public class BluetoothSDKService extends Service {
         }
     };
 
-    private class AcceptThread extends Thread {
+//    private class AcceptThread extends Thread {
+//    }
+
+
+    private synchronized void startConnectThread() {
+        connectThread = new ConnectThread();
+        connectThread.start();
     }
 
     private class ConnectThread extends Thread {
         private BluetoothDevice device;
+
+        public ConnectThread(BluetoothDevice device) {
+            this.device = device;
+        }
+
+        @Override
+        public void run() {
+            bluetoothAdapter.getBondedDevices()
+                    .stream()
+                    .filter(dev -> BluetoothUtils.TELEMETRY_DEVICE_NAME.equals(dev.getName())
+                            || BluetoothUtils.TELEMETRY_DEVICE_ADRESS.equals(dev.getAddress()))
+                    .findFirst()
+                    .ifPresent(dev -> startConnection(dev));
+        }
+
+    }
+
+    private void startConnection(BluetoothDevice dev) {
+        startConnectedThread(dev.createRfcommSocketToServiceRecord(dev.getUuids()[0].getUuid()));
+        pushBroadcastMessage(BluetoothUtils.ACTION_DEVICE_CONNECTED, dev, null, "Device connected");
     }
 
     private synchronized void startConnectedThread(BluetoothSocket bluetoothSocket) {
@@ -255,8 +281,8 @@ public class BluetoothSDKService extends Service {
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            bluetoothAdapter.startDiscovery();
             pushBroadcastMessage(BluetoothUtils.ACTION_DISCOVERY_STARTED, null, null, null);
+            startConnectThread();
         }
 
         public void stopDiscovery(Context context) {
@@ -274,34 +300,34 @@ public class BluetoothSDKService extends Service {
             pushBroadcastMessage(BluetoothUtils.ACTION_DISCOVERY_STOPPED, null,  null,null);
         }
 
+        public void requestDeviceInfo() {
+            connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_DEVICE_INFO});
+        }
+
+        public void requestFileList() {
+            connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_GET_FILE_LIST});
+        }
+
+        public void requestFile(String filename) {
+            byte[] param = filename.getBytes(StandardCharsets.UTF_8);
+            connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_GET_FILE});
+            connectedThread.write(param);
+        }
+
+        public void requestDeleteFile(String filename) {
+            byte[] param = filename.getBytes(StandardCharsets.UTF_8);
+            connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_DELETE_FILE});
+            connectedThread.write(param);
+        }
+
+        public void requestEnableTelemetry(boolean enable) {
+            byte[] param = new byte[] { (byte) (enable ? 1 : 0) };
+            connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_ENABLE_TELEMETRY});
+            connectedThread.write(param);
+        }
+
         public BluetoothSDKService getService() {
             return BluetoothSDKService.this;
         }
-    }
-
-    public void requestDeviceInfo() {
-        connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_DEVICE_INFO});
-    }
-
-    public void requestFileList() {
-        connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_GET_FILE_LIST});
-    }
-
-    public void requestFile(String filename) {
-        byte[] param = filename.getBytes(StandardCharsets.UTF_8);
-        connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_GET_FILE});
-        connectedThread.write(param);
-    }
-
-    public void requestDeleteFile(String filename) {
-        byte[] param = filename.getBytes(StandardCharsets.UTF_8);
-        connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_DELETE_FILE});
-        connectedThread.write(param);
-    }
-
-    public void requestEnableTelemetry(boolean enable) {
-        byte[] param = new byte[] { (byte) (enable ? 1 : 0) };
-        connectedThread.write(new byte[] {BluetoothUtils.REQUEST_TAG_ENABLE_TELEMETRY});
-        connectedThread.write(param);
     }
 }
